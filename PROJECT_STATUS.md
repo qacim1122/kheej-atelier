@@ -3,35 +3,43 @@
 ## Current Version
 0.2.0
 
+## Repository Status
+Stable
+
 ## Current Phase
-Homepage Development
+Recovery
 
 ## Completed
 
 - Foundation Documentation
 - Shopify Skeleton
 - Header System
-- Design Tokens
 - Shared Components
 - Featured Categories
+- Git Repository
+- GitHub Sync
 
-## Recovery Required
+## Missing
 
 - Hero System
-- Shared Snippets
+- button.liquid
+- section-heading.liquid
+- responsive-media.liquid
 
-## Next Task
+## Next Milestone
 
-Recover the Hero System and shared snippets before building any new sections.
-
-## Source of Truth
-
-This repository is the only official version of the project.
+Recover the Hero System and shared snippets.
 
 ## Workflow
 
-Architecture → Implementation → Review → Commit → Push
+1. ChatGPT creates architecture.
+2. Claude implements.
+3. Verify files locally.
+4. ChatGPT reviews.
+5. Git Commit.
+6. Git Push.
 
-## Last Updated
+## Source of Truth
 
-2026-07-02
+D:\kheej-atelier
+GitHub: github.com/qacim1122/kheej-atelier
