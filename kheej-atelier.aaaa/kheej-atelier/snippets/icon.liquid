@@ -1,0 +1,35 @@
+{% comment %}
+  Shared icon snippet for interface controls.
+  Accepts: icon: 'account', 'cart', 'chevron-down', 'close', 'menu', 'search'
+{% endcomment %}
+
+{%- case icon -%}
+  {%- when 'account' -%}
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <path d="M20 21a8 8 0 0 0-16 0" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+      <circle cx="12" cy="7" r="4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+    </svg>
+  {%- when 'cart' -%}
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <path d="M7 8h14l-2 11H8L6 4H3" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+      <circle cx="9" cy="21" r="1" fill="currentColor"/>
+      <circle cx="18" cy="21" r="1" fill="currentColor"/>
+    </svg>
+  {%- when 'chevron-down' -%}
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+    </svg>
+  {%- when 'close' -%}
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+    </svg>
+  {%- when 'menu' -%}
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+    </svg>
+  {%- when 'search' -%}
+    <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+      <path d="m16 16 4 4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"/>
+    </svg>
+{%- endcase -%}

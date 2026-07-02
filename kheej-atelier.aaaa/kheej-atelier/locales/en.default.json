@@ -1,0 +1,25 @@
+{
+  "general": {
+    "accessibility": {
+      "skip_to_content": "Skip to content"
+    }
+  },
+  "sections": {
+    "header": {
+      "account": "Account",
+      "announcement": "Announcement",
+      "cart": "Cart",
+      "close_menu": "Close menu",
+      "menu": "Menu",
+      "mobile_navigation": "Mobile navigation",
+      "open_menu": "Open menu",
+      "primary_navigation": "Primary navigation",
+      "search": "Search"
+    },
+    "main_group": {
+      "name": "Main group",
+      "title": "Kheej - Atelier",
+      "description": "Shopify theme skeleton ready."
+    }
+  }
+}

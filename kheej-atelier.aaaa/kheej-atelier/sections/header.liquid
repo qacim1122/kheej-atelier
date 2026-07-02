@@ -1,0 +1,233 @@
+{{ 'header.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign main_menu = linklists[section.settings.main_menu]
+  assign logo_width = section.settings.logo_width
+  assign header_height = section.settings.header_height
+  assign drawer_id = 'MobileMenu-' | append: section.id
+-%}
+
+<header-section
+  class="site-header-wrapper"
+  data-sticky="{{ section.settings.enable_sticky_header }}"
+  data-transparent="{{ section.settings.enable_transparent_header }}"
+  style="
+    --header-height: {{ header_height }}px;
+    --logo-width: {{ logo_width }}px;
+    --announcement-background: {{ section.settings.announcement_background }};
+    --announcement-text: {{ section.settings.announcement_text_color }};
+  "
+>
+  {%- if section.settings.show_announcement and section.settings.announcement_text != blank -%}
+    <div class="announcement-bar" role="region" aria-label="{{ 'sections.header.announcement' | t }}">
+      <div class="announcement-bar__inner container">
+        {%- if section.settings.announcement_link != blank -%}
+          <a class="announcement-bar__link" href="{{ section.settings.announcement_link }}">
+            {{ section.settings.announcement_text | escape }}
+          </a>
+        {%- else -%}
+          <p class="mb-0">{{ section.settings.announcement_text | escape }}</p>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+
+  <header class="site-header" role="banner">
+    <div class="site-header__inner container--wide">
+      <button
+        class="site-header__mobile-toggle"
+        type="button"
+        data-drawer-open="{{ drawer_id }}"
+        aria-controls="{{ drawer_id }}"
+        aria-expanded="false"
+      >
+        <span class="visually-hidden">{{ 'sections.header.open_menu' | t }}</span>
+        {% render 'icon', icon: 'menu' %}
+      </button>
+
+      <div class="site-header__brand">
+        <a class="site-header__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+          {%- if section.settings.logo != blank -%}
+            {{
+              section.settings.logo
+              | image_url: width: 600
+              | image_tag:
+                class: 'site-header__logo-image',
+                widths: '120, 180, 240, 300, 420, 600',
+                width: logo_width,
+                loading: 'eager',
+                alt: shop.name
+            }}
+          {%- else -%}
+            {{ shop.name | escape }}
+          {%- endif -%}
+        </a>
+      </div>
+
+      <nav class="site-header__nav site-nav" aria-label="{{ 'sections.header.primary_navigation' | t }}">
+        {% render 'navigation-list', menu: main_menu, variant: 'desktop' %}
+      </nav>
+
+      <div class="site-header__actions">
+        {%- if section.settings.show_search -%}
+          <a class="site-header__action" href="{{ routes.search_url }}" aria-label="{{ 'sections.header.search' | t }}">
+            {% render 'icon', icon: 'search' %}
+          </a>
+        {%- endif -%}
+
+        {%- if section.settings.show_account and shop.customer_accounts_enabled -%}
+          <a class="site-header__action" href="{{ routes.account_url }}" aria-label="{{ 'sections.header.account' | t }}">
+            {% render 'icon', icon: 'account' %}
+          </a>
+        {%- endif -%}
+
+        {%- if section.settings.show_cart -%}
+          <a class="site-header__action" href="{{ routes.cart_url }}" aria-label="{{ 'sections.header.cart' | t }}">
+            {% render 'icon', icon: 'cart' %}
+            {%- if cart.item_count > 0 -%}
+              <span class="site-header__cart-count">{{ cart.item_count }}</span>
+            {%- endif -%}
+          </a>
+        {%- endif -%}
+      </div>
+    </div>
+  </header>
+</header-section>
+
+<mobile-drawer class="mobile-drawer" id="{{ drawer_id }}" aria-hidden="true" hidden>
+  <button class="mobile-drawer__overlay" type="button" data-drawer-close aria-label="{{ 'sections.header.close_menu' | t }}"></button>
+
+  <div class="mobile-drawer__panel" data-drawer-panel role="dialog" aria-modal="true" aria-label="{{ 'sections.header.mobile_navigation' | t }}">
+    <div class="mobile-drawer__header">
+      <span class="mobile-drawer__title">{{ 'sections.header.menu' | t }}</span>
+      <button class="mobile-drawer__close" type="button" data-drawer-close>
+        <span class="visually-hidden">{{ 'sections.header.close_menu' | t }}</span>
+        {% render 'icon', icon: 'close' %}
+      </button>
+    </div>
+
+    <nav class="mobile-nav" aria-label="{{ 'sections.header.mobile_navigation' | t }}">
+      {% render 'navigation-list', menu: main_menu, variant: 'mobile' %}
+    </nav>
+  </div>
+</mobile-drawer>
+
+<script src="{{ 'header.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Brand"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo",
+      "info": "If no logo is selected, the shop name is shown as text."
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo width",
+      "min": 80,
+      "max": 280,
+      "step": 10,
+      "unit": "px",
+      "default": 140
+    },
+    {
+      "type": "range",
+      "id": "header_height",
+      "label": "Header height on desktop and mobile",
+      "min": 56,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "main_menu",
+      "label": "Primary menu",
+      "info": "Nested menu links display as dropdowns on desktop and expandable groups on mobile.",
+      "default": "main-menu"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_search",
+      "label": "Show search icon",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_account",
+      "label": "Show account icon",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_cart",
+      "label": "Show cart icon",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Behavior"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sticky_header",
+      "label": "Sticky header",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_transparent_header",
+      "label": "Transparent before scrolling",
+      "info": "Best used on templates with a full-width visual section at the top.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Announcement bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_announcement",
+      "label": "Show announcement bar",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "announcement_text",
+      "label": "Announcement text",
+      "default": "Free shipping on orders over $150"
+    },
+    {
+      "type": "url",
+      "id": "announcement_link",
+      "label": "Announcement link",
+      "info": "Leave blank to show plain announcement text."
+    },
+    {
+      "type": "color",
+      "id": "announcement_background",
+      "label": "Announcement background",
+      "default": "#7A3E2D"
+    },
+    {
+      "type": "color",
+      "id": "announcement_text_color",
+      "label": "Announcement text",
+      "default": "#FFFFFF"
+    }
+  ]
+}
+{% endschema %}

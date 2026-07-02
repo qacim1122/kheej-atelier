@@ -1,0 +1,63 @@
+{% comment %}
+  Shared navigation renderer for header menus.
+  Accepts:
+  - menu: Shopify linklist object
+  - variant: 'desktop' or 'mobile'
+{% endcomment %}
+
+{%- liquid
+  assign is_mobile = false
+  assign list_class = 'site-nav__list'
+  assign item_class = 'site-nav__item'
+  assign link_class = 'site-nav__link'
+  assign summary_class = 'site-nav__summary'
+  assign child_list_class = 'site-nav__dropdown'
+  assign child_link_class = 'site-nav__dropdown-link'
+
+  if variant == 'mobile'
+    assign is_mobile = true
+    assign list_class = 'mobile-nav__list'
+    assign item_class = 'mobile-nav__item'
+    assign link_class = 'mobile-nav__link'
+    assign summary_class = 'mobile-nav__summary'
+    assign child_list_class = 'mobile-nav__children'
+    assign child_link_class = 'mobile-nav__link'
+  endif
+-%}
+
+<ul class="{{ list_class }}">
+  {%- for link in menu.links -%}
+    <li class="{{ item_class }}">
+      {%- if link.links != blank -%}
+        <details>
+          <summary class="{{ summary_class }}">
+            <span>{{ link.title | escape }}</span>
+            {% render 'icon', icon: 'chevron-down' %}
+          </summary>
+
+          <ul class="{{ child_list_class }}">
+            {%- for child_link in link.links -%}
+              <li>
+                <a
+                  class="{{ child_link_class }}"
+                  href="{{ child_link.url }}"
+                  {% if child_link.current %}aria-current="page"{% endif %}
+                >
+                  {{ child_link.title | escape }}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </details>
+      {%- else -%}
+        <a
+          class="{{ link_class }}"
+          href="{{ link.url }}"
+          {% if link.current %}aria-current="page"{% endif %}
+        >
+          {{ link.title | escape }}
+        </a>
+      {%- endif -%}
+    </li>
+  {%- endfor -%}
+</ul>

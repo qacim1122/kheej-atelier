@@ -1,0 +1,87 @@
+:root {
+  --color-background: #f8f6f1;
+  --color-surface: #ffffff;
+  --color-surface-muted: #efebe3;
+  --color-text-primary: #1e1b18;
+  --color-text-secondary: #5d5650;
+  --color-text-muted: #8a8178;
+  --color-border: #d8d0c5;
+  --color-accent: #7a3e2d;
+  --color-accent-dark: #4c241b;
+  --color-success: #2f6b4f;
+  --color-warning: #a66a1f;
+  --color-error: #a33a32;
+  --color-focus: #1f5eff;
+  --color-selection-background: var(--color-accent);
+  --color-selection-text: var(--color-surface);
+
+  --font-family-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-heading: Georgia, "Times New Roman", serif;
+  --font-size-caption: 0.75rem;
+  --font-size-body-small: 0.875rem;
+  --font-size-body: 1rem;
+  --font-size-heading-4: clamp(1.125rem, 1rem + 0.5vw, 1.5rem);
+  --font-size-heading-3: clamp(1.375rem, 1.125rem + 1vw, 2rem);
+  --font-size-heading-2: clamp(1.75rem, 1.4rem + 1.4vw, 2.5rem);
+  --font-size-heading-1: clamp(2rem, 1.5rem + 2vw, 3rem);
+  --font-size-display: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+  --font-size-display-xl: clamp(3rem, 2rem + 4vw, 4.5rem);
+  --line-height-tight: 1.12;
+  --line-height-heading: 1.18;
+  --line-height-body: 1.6;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+
+  --space-0: 0;
+  --space-025: 0.125rem;
+  --space-050: 0.25rem;
+  --space-100: 0.5rem;
+  --space-150: 0.75rem;
+  --space-200: 1rem;
+  --space-300: 1.5rem;
+  --space-400: 2rem;
+  --space-500: 2.5rem;
+  --space-600: 3rem;
+  --space-800: 4rem;
+  --space-1000: 5rem;
+  --space-1200: 6rem;
+  --space-1600: 8rem;
+
+  --radius-none: 0;
+  --radius-small: 0.125rem;
+  --radius-default: 0.25rem;
+  --radius-medium: 0.5rem;
+  --radius-pill: 999px;
+
+  --shadow-low: 0 1px 2px rgba(30, 27, 24, 0.08);
+  --shadow-medium: 0 8px 24px rgba(30, 27, 24, 0.1);
+  --shadow-high: 0 18px 48px rgba(30, 27, 24, 0.14);
+
+  --duration-fast: 120ms;
+  --duration-default: 180ms;
+  --duration-slow: 280ms;
+  --duration-panel: 360ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0, 0, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  --container-narrow: 42rem;
+  --container-default: 72rem;
+  --container-wide: 90rem;
+  --container-full: 100%;
+  --container-gutter: var(--space-200);
+
+  --z-index-base: 0;
+  --z-index-raised: 10;
+  --z-index-sticky: 100;
+  --z-index-overlay: 400;
+  --z-index-modal: 500;
+  --z-index-toast: 600;
+}
+
+@media screen and (min-width: 48em) {
+  :root {
+    --container-gutter: var(--space-400);
+  }
+}
