@@ -20,6 +20,9 @@
       "name": "Main group",
       "title": "Kheej - Atelier",
       "description": "Shopify theme skeleton ready."
+    },
+    "hero": {
+      "scroll_to_content": "Scroll to content"
     }
   }
 }

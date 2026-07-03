@@ -1,0 +1,393 @@
+/*
+  Hero section styles.
+
+  Self-contained: no shared components.css exists in this repository yet
+  (see PROJECT_STATUS.md — Shared Components is not actually present),
+  so eyebrow/title/subheading/button typography is defined here rather
+  than assumed from a component layer that isn't there. Class names are
+  kept plain (.hero__eyebrow, not .hero .section-heading__eyebrow) so
+  this is easy to re-point at shared components later without a markup
+  change.
+
+  Enumerated settings (height, alignment, vertical position, content
+  width, spacing) are read via data-attributes on the root .hero element.
+  Rather than repeating full declaration blocks per attribute value, each
+  attribute selector sets one or two small CSS custom properties, and a
+  single base rule consumes them — less duplication, one place to read
+  the actual layout logic. Overlay opacity and overlay color are the two
+  settings that need a computed (not just enum-switched) value, so those
+  are set via a section-scoped {% style %} block in hero.liquid — a real
+  stylesheet rule, not an inline style attribute.
+*/
+
+.hero {
+  position: relative;
+  display: flex;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+}
+
+/* --- Height --- */
+/* A min-height floor (not just vh) keeps the hero from collapsing too
+   short on small-height / landscape mobile viewports. */
+
+.hero[data-height="small"] {
+  min-height: max(24rem, 50vh);
+}
+
+.hero[data-height="medium"] {
+  min-height: max(28rem, 70vh);
+}
+
+.hero[data-height="large"] {
+  min-height: max(32rem, 85vh);
+}
+
+.hero[data-height="full_screen"] {
+  min-height: 100svh;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Media                                                                  */
+/* ---------------------------------------------------------------------- */
+
+.hero__media {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-index-base);
+}
+
+.hero__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--hero-overlay-color, var(--color-text-primary));
+  opacity: var(--hero-overlay-opacity, 0);
+  pointer-events: none;
+}
+
+/* --- Empty state ---
+   A soft gradient wash + a thin centered mark, rendered whenever no
+   image is set — on the live storefront as much as in the Theme
+   Editor. Deliberately not Shopify's default gray placeholder_svg_tag
+   glyph, which reads as "missing image" rather than "intentional". */
+
+.hero__placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, var(--color-surface) 0%, var(--color-surface-muted) 100%);
+}
+
+.hero__placeholder-mark {
+  width: clamp(4rem, 10vw, 7rem);
+  height: clamp(4rem, 10vw, 7rem);
+  color: var(--color-border);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Container / content                                                    */
+/* ---------------------------------------------------------------------- */
+
+.hero__container {
+  position: relative;
+  z-index: var(--z-index-raised);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: var(--hero-align-items, center);
+  justify-content: center;
+  gap: var(--space-600);
+  padding-block-start: var(--hero-padding-top, var(--space-800));
+  padding-block-end: var(--hero-padding-bottom, var(--space-800));
+}
+
+/* --- Vertical content position --- */
+
+.hero[data-vertical-position="top"] .hero__container {
+  justify-content: flex-start;
+}
+
+.hero[data-vertical-position="center"] .hero__container {
+  justify-content: center;
+}
+
+.hero[data-vertical-position="bottom"] .hero__container {
+  justify-content: flex-end;
+}
+
+/* --- Top / bottom spacing --- */
+
+.hero[data-padding-top="none"] {
+  --hero-padding-top: 0;
+}
+
+.hero[data-padding-top="small"] {
+  --hero-padding-top: var(--space-600);
+}
+
+.hero[data-padding-top="medium"] {
+  --hero-padding-top: var(--space-1000);
+}
+
+.hero[data-padding-top="large"] {
+  --hero-padding-top: var(--space-1600);
+}
+
+.hero[data-padding-bottom="none"] {
+  --hero-padding-bottom: 0;
+}
+
+.hero[data-padding-bottom="small"] {
+  --hero-padding-bottom: var(--space-600);
+}
+
+.hero[data-padding-bottom="medium"] {
+  --hero-padding-bottom: var(--space-1000);
+}
+
+.hero[data-padding-bottom="large"] {
+  --hero-padding-bottom: var(--space-1600);
+}
+
+.hero__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-300);
+  color: var(--color-surface);
+  text-align: var(--hero-text-align, center);
+}
+
+/* No image → the placeholder is light, so invert to dark text/buttons.
+   Overlay never renders in this state (see hero.liquid), so there's no
+   scrim to rely on for contrast. */
+
+.hero--no-image .hero__content {
+  color: var(--color-text-primary);
+}
+
+/* --- Content width ---
+   Expressed as a reading measure rather than a spacing token: this is
+   a typographic line-length concern (tokens.css has no "measure"
+   scale), not a layout rhythm value. "Medium" intentionally reuses
+   --container-narrow since it happens to be the same figure. */
+
+.hero[data-content-width="narrow"] .hero__content {
+  max-width: 32rem;
+}
+
+.hero[data-content-width="medium"] .hero__content {
+  max-width: var(--container-narrow);
+}
+
+.hero[data-content-width="wide"] .hero__content {
+  max-width: 54rem;
+}
+
+/* --- Mobile alignment (base / mobile-first) --- */
+
+.hero[data-mobile-alignment="left"] {
+  --hero-align-items: flex-start;
+  --hero-text-align: start;
+}
+
+.hero[data-mobile-alignment="center"] {
+  --hero-align-items: center;
+  --hero-text-align: center;
+}
+
+/* --- Desktop alignment (overrides mobile alignment at md+) --- */
+
+@media screen and (min-width: 48em) {
+  .hero[data-desktop-alignment="left"] {
+    --hero-align-items: flex-start;
+    --hero-text-align: start;
+  }
+
+  .hero[data-desktop-alignment="center"] {
+    --hero-align-items: center;
+    --hero-text-align: center;
+  }
+
+  .hero[data-desktop-alignment="right"] {
+    --hero-align-items: flex-end;
+    --hero-text-align: end;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Typography                                                             */
+/* ---------------------------------------------------------------------- */
+
+.hero__eyebrow {
+  color: inherit;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.hero__title {
+  color: inherit;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-display-xl);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.hero__subheading {
+  color: inherit;
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  opacity: 0.92;
+}
+
+.hero__subheading p:last-child {
+  margin-block-end: 0;
+}
+
+.hero__caption {
+  margin-block-start: var(--space-300);
+  color: var(--color-surface);
+  font-size: var(--font-size-caption);
+  opacity: 0.75;
+}
+
+.hero--no-image .hero__caption {
+  color: var(--color-text-secondary);
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                */
+/* Same box model (padding/border-width/font-size) across variants so    */
+/* switching variant never shifts layout. Focus ring comes from the      */
+/* theme-wide :focus-visible rule in base.css.                            */
+/* ---------------------------------------------------------------------- */
+
+.hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-300);
+  justify-content: var(--hero-text-align, center);
+}
+
+.hero__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--space-150);
+  padding-inline: var(--space-400);
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-default) var(--ease-standard),
+    border-color var(--duration-default) var(--ease-standard),
+    color var(--duration-default) var(--ease-standard);
+}
+
+.hero__button--primary {
+  border-color: var(--color-surface);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.hero__button--primary:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.hero__button--secondary {
+  border-color: var(--color-surface);
+  background: transparent;
+  color: var(--color-surface);
+}
+
+.hero__button--secondary:hover {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.hero--no-image .hero__button--primary {
+  border-color: var(--color-text-primary);
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+}
+
+.hero--no-image .hero__button--primary:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.hero--no-image .hero__button--secondary {
+  border-color: var(--color-text-primary);
+  color: var(--color-text-primary);
+}
+
+.hero--no-image .hero__button--secondary:hover {
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+}
+
+.hero__button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Scroll indicator                                                       */
+/* A real, keyboard-focusable link to #MainContent — no JS required.      */
+/* The bounce is purely decorative; base.css's global                    */
+/* prefers-reduced-motion rule already clamps its animation to a single   */
+/* 1ms frame, so no local override is needed here.                        */
+/* ---------------------------------------------------------------------- */
+
+.hero__scroll-indicator {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: var(--space-400);
+  z-index: var(--z-index-raised);
+  display: flex;
+  justify-content: center;
+  width: var(--space-600);
+  height: var(--space-600);
+  margin-inline: auto;
+  color: var(--color-surface);
+  animation: hero-scroll-bounce 1.8s var(--ease-standard) infinite;
+}
+
+.hero--no-image .hero__scroll-indicator {
+  color: var(--color-text-secondary);
+}
+
+.hero__scroll-indicator svg {
+  width: var(--space-400);
+  height: var(--space-400);
+}
+
+@keyframes hero-scroll-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(var(--space-100));
+  }
+}
