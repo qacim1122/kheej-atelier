@@ -37,6 +37,11 @@
       "in_stock": "In stock",
       "view_product": "View product",
       "editor_empty": "Select a product to preview this section."
+    },
+    "footer": {
+      "contact_heading": "Contact",
+      "rights_reserved": "All rights reserved.",
+      "payment_methods": "Payment methods"
     }
   }
 }

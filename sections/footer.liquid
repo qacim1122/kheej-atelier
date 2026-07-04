@@ -1,0 +1,428 @@
+{% comment %}
+  Footer — global site chrome, rendered on every page via
+  layout/theme.liquid's {% section 'footer' %} call (added alongside
+  this file — see that file's own comment on why this was necessary:
+  without it, this section renders nowhere).
+
+  Fully self-contained per the brief: no shared components.css, and
+  deliberately no dependency on snippets/icon.liquid either — that
+  snippet only covers interface controls (account/cart/menu/search/
+  chevron/close), not brand/social icons, so the 6 social icons below
+  are inline SVGs local to this file. They're generic outline glyphs,
+  not reproductions of official brand logo files.
+
+  No blocks: every content area (brand, up to 3 menus, contact, social,
+  bottom bar) is a fixed-cardinality section setting, matching the
+  brief's explicit "up to 3 menu pickers" phrasing rather than an
+  open-ended block list. Logo/logo width mirror sections/header.liquid's
+  own settings (id, fallback-to-shop-name behavior, range bounds) for
+  consistency between the two brand touchpoints.
+
+  Unlike Featured Collection/Featured Product (which skip rendering
+  entirely with no data), Footer always renders — it's structural site
+  chrome like the header, not a data-bound merchandising section — and
+  falls back to a generated copyright line if left blank. Every other
+  piece (each menu, contact, social row, payment icons, locale
+  selectors) independently hides itself when unconfigured.
+
+  Country/Language selectors are genuinely inert per the brief ("no
+  functionality"): native disabled <button> elements, which are
+  natively unfocusable and unclickable with no ARIA needed. They surface
+  real `localization` data for display so they don't look like fake
+  placeholder text, but they submit nothing and run no JS.
+{% endcomment %}
+
+{{ 'footer.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign logo = section.settings.logo
+  assign logo_width = section.settings.logo_width
+  assign description = section.settings.description
+  assign copyright_text = section.settings.copyright_text
+
+  assign menu_1 = section.settings.menu_1
+  assign menu_1_heading = section.settings.menu_1_heading
+  assign menu_2 = section.settings.menu_2
+  assign menu_2_heading = section.settings.menu_2_heading
+  assign menu_3 = section.settings.menu_3
+  assign menu_3_heading = section.settings.menu_3_heading
+
+  assign social_instagram = section.settings.social_instagram
+  assign social_facebook = section.settings.social_facebook
+  assign social_pinterest = section.settings.social_pinterest
+  assign social_tiktok = section.settings.social_tiktok
+  assign social_youtube = section.settings.social_youtube
+  assign social_linkedin = section.settings.social_linkedin
+  assign has_social = false
+  if social_instagram != blank or social_facebook != blank or social_pinterest != blank or social_tiktok != blank or social_youtube != blank or social_linkedin != blank
+    assign has_social = true
+  endif
+
+  assign contact_email = section.settings.contact_email
+  assign contact_phone = section.settings.contact_phone
+  assign contact_address = section.settings.contact_address
+  assign has_contact = false
+  if contact_email != blank or contact_phone != blank or contact_address != blank
+    assign has_contact = true
+  endif
+
+  assign show_payment_icons = section.settings.show_payment_icons
+  assign show_locale_selectors = section.settings.show_locale_selectors
+
+  assign background = section.settings.background
+  assign padding_top = section.settings.padding_top
+  assign padding_bottom = section.settings.padding_bottom
+-%}
+
+<footer
+  class="footer"
+  data-background="{{ background }}"
+  data-padding-top="{{ padding_top }}"
+  data-padding-bottom="{{ padding_bottom }}"
+>
+  <div class="container">
+    <div class="grid grid--auto footer__top">
+      <div class="footer__brand">
+        <a class="footer__logo" href="{{ routes.root_url }}" aria-label="{{ shop.name | escape }}">
+          {%- if logo != blank -%}
+            {{
+              logo
+              | image_url: width: 600
+              | image_tag:
+                class: 'footer__logo-image',
+                widths: '120, 180, 240, 300, 420, 600',
+                width: logo_width,
+                loading: 'lazy',
+                alt: shop.name
+            }}
+          {%- else -%}
+            {{ shop.name | escape }}
+          {%- endif -%}
+        </a>
+
+        {%- if description != blank -%}
+          <div class="footer__description">{{ description }}</div>
+        {%- endif -%}
+
+        {%- if has_social -%}
+          <ul class="footer__social" role="list">
+            {%- if social_instagram != blank -%}
+              <li>
+                <a href="{{ social_instagram }}" class="footer__social-link" aria-label="Instagram">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg>
+                </a>
+              </li>
+            {%- endif -%}
+            {%- if social_facebook != blank -%}
+              <li>
+                <a href="{{ social_facebook }}" class="footer__social-link" aria-label="Facebook">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H9v3h2v6h3v-6h2.5l.5-3H14V9z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                </a>
+              </li>
+            {%- endif -%}
+            {%- if social_pinterest != blank -%}
+              <li>
+                <a href="{{ social_pinterest }}" class="footer__social-link" aria-label="Pinterest">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 18c1-3 1.8-6 2.2-8a2.3 2.3 0 1 1 2.8 1.6c-.3 1.2-1 3-1 4 0 1 .8 1.7 1.8 1.7 2 0 3.2-2.2 3.2-4.8 0-2.5-1.8-4.5-4.9-4.5-3.4 0-5.4 2.3-5.4 4.9 0 .9.3 1.6.8 2.1" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+                </a>
+              </li>
+            {%- endif -%}
+            {%- if social_tiktok != blank -%}
+              <li>
+                <a href="{{ social_tiktok }}" class="footer__social-link" aria-label="TikTok">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14 4v10.5a3 3 0 1 1-2.4-2.9M14 4c.4 2 2 3.5 4 3.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </a>
+              </li>
+            {%- endif -%}
+            {%- if social_youtube != blank -%}
+              <li>
+                <a href="{{ social_youtube }}" class="footer__social-link" aria-label="YouTube">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="m10.5 9.5 4 2.5-4 2.5v-5z" fill="currentColor"/></svg>
+                </a>
+              </li>
+            {%- endif -%}
+            {%- if social_linkedin != blank -%}
+              <li>
+                <a href="{{ social_linkedin }}" class="footer__social-link" aria-label="LinkedIn">
+                  <svg aria-hidden="true" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8.5" r="1.2" fill="currentColor"/><path d="M8 11.5v6M12 17.5v-3.7c0-1.4 1-2.3 2.2-2.3s2 .9 2 2.3v3.7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </a>
+              </li>
+            {%- endif -%}
+          </ul>
+        {%- endif -%}
+      </div>
+
+      {%- if menu_1 != blank -%}
+        <nav class="footer__nav" aria-label="{{ menu_1_heading | default: menu_1.title | escape }}">
+          {%- if menu_1_heading != blank -%}
+            <p class="footer__nav-heading">{{ menu_1_heading | escape }}</p>
+          {%- endif -%}
+          <ul class="footer__nav-list" role="list">
+            {%- for link in menu_1.links -%}
+              <li><a href="{{ link.url }}" class="footer__nav-link">{{ link.title | escape }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+
+      {%- if menu_2 != blank -%}
+        <nav class="footer__nav" aria-label="{{ menu_2_heading | default: menu_2.title | escape }}">
+          {%- if menu_2_heading != blank -%}
+            <p class="footer__nav-heading">{{ menu_2_heading | escape }}</p>
+          {%- endif -%}
+          <ul class="footer__nav-list" role="list">
+            {%- for link in menu_2.links -%}
+              <li><a href="{{ link.url }}" class="footer__nav-link">{{ link.title | escape }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+
+      {%- if menu_3 != blank -%}
+        <nav class="footer__nav" aria-label="{{ menu_3_heading | default: menu_3.title | escape }}">
+          {%- if menu_3_heading != blank -%}
+            <p class="footer__nav-heading">{{ menu_3_heading | escape }}</p>
+          {%- endif -%}
+          <ul class="footer__nav-list" role="list">
+            {%- for link in menu_3.links -%}
+              <li><a href="{{ link.url }}" class="footer__nav-link">{{ link.title | escape }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+
+      {%- if has_contact -%}
+        <div class="footer__contact">
+          <p class="footer__nav-heading">{{ 'sections.footer.contact_heading' | t }}</p>
+          <ul class="footer__contact-list" role="list">
+            {%- if contact_email != blank -%}
+              <li><a href="mailto:{{ contact_email }}" class="footer__nav-link">{{ contact_email }}</a></li>
+            {%- endif -%}
+            {%- if contact_phone != blank -%}
+              <li><a href="tel:{{ contact_phone | replace: ' ', '' }}" class="footer__nav-link">{{ contact_phone }}</a></li>
+            {%- endif -%}
+            {%- if contact_address != blank -%}
+              <li class="footer__address">{{ contact_address | newline_to_br }}</li>
+            {%- endif -%}
+          </ul>
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="footer__bottom">
+      <p class="footer__copyright">
+        {%- if copyright_text != blank -%}
+          {{ copyright_text | escape }}
+        {%- else -%}
+          &copy; {{ 'now' | date: '%Y' }} {{ shop.name | escape }}. {{ 'sections.footer.rights_reserved' | t }}
+        {%- endif -%}
+      </p>
+
+      <div class="footer__bottom-controls">
+        {%- if show_payment_icons and shop.enabled_payment_types.size > 0 -%}
+          <ul class="footer__payment-icons" role="list" aria-label="{{ 'sections.footer.payment_methods' | t }}">
+            {%- for type in shop.enabled_payment_types -%}
+              <li>{{ type | payment_type_svg_tag: class: 'footer__payment-icon' }}</li>
+            {%- endfor -%}
+          </ul>
+        {%- endif -%}
+
+        {%- if show_locale_selectors -%}
+          <div class="footer__locale-selectors">
+            <button type="button" class="footer__locale-pill" disabled>
+              {{ localization.country.name | default: 'Country' }}
+            </button>
+            <button type="button" class="footer__locale-pill" disabled>
+              {{ localization.language.endonym_name | default: 'Language' }}
+            </button>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Brand"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo",
+      "info": "If no logo is selected, the shop name is shown as text."
+    },
+    {
+      "type": "range",
+      "id": "logo_width",
+      "label": "Logo width",
+      "min": 80,
+      "max": 280,
+      "step": 10,
+      "unit": "px",
+      "default": 120
+    },
+    {
+      "type": "richtext",
+      "id": "description",
+      "label": "Brand description"
+    },
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright text",
+      "info": "If left blank, a copyright line is generated automatically using the current year and shop name."
+    },
+    {
+      "type": "header",
+      "content": "Navigation"
+    },
+    {
+      "type": "link_list",
+      "id": "menu_1",
+      "label": "Menu 1"
+    },
+    {
+      "type": "text",
+      "id": "menu_1_heading",
+      "label": "Menu 1 heading",
+      "info": "Optional. Defaults to the menu's own title."
+    },
+    {
+      "type": "link_list",
+      "id": "menu_2",
+      "label": "Menu 2"
+    },
+    {
+      "type": "text",
+      "id": "menu_2_heading",
+      "label": "Menu 2 heading",
+      "info": "Optional. Defaults to the menu's own title."
+    },
+    {
+      "type": "link_list",
+      "id": "menu_3",
+      "label": "Menu 3"
+    },
+    {
+      "type": "text",
+      "id": "menu_3_heading",
+      "label": "Menu 3 heading",
+      "info": "Optional. Defaults to the menu's own title."
+    },
+    {
+      "type": "header",
+      "content": "Social"
+    },
+    {
+      "type": "url",
+      "id": "social_instagram",
+      "label": "Instagram"
+    },
+    {
+      "type": "url",
+      "id": "social_facebook",
+      "label": "Facebook"
+    },
+    {
+      "type": "url",
+      "id": "social_pinterest",
+      "label": "Pinterest"
+    },
+    {
+      "type": "url",
+      "id": "social_tiktok",
+      "label": "TikTok"
+    },
+    {
+      "type": "url",
+      "id": "social_youtube",
+      "label": "YouTube"
+    },
+    {
+      "type": "url",
+      "id": "social_linkedin",
+      "label": "LinkedIn"
+    },
+    {
+      "type": "header",
+      "content": "Contact"
+    },
+    {
+      "type": "text",
+      "id": "contact_email",
+      "label": "Email"
+    },
+    {
+      "type": "text",
+      "id": "contact_phone",
+      "label": "Phone"
+    },
+    {
+      "type": "textarea",
+      "id": "contact_address",
+      "label": "Address"
+    },
+    {
+      "type": "header",
+      "content": "Bottom bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_payment_icons",
+      "label": "Show payment icons",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale_selectors",
+      "label": "Show country/language selectors",
+      "info": "Visual placeholders only — this theme does not yet support multiple countries or languages.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "options": [
+        { "value": "none", "label": "Default" },
+        { "value": "muted", "label": "Muted" },
+        { "value": "dark", "label": "Dark" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "Top spacing",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "Bottom spacing",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "small"
+    }
+  ]
+}
+{% endschema %}
