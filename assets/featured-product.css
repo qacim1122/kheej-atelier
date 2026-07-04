@@ -1,0 +1,339 @@
+/*
+  Featured Product section styles.
+
+  Self-contained, same as hero.css / featured-collection.css /
+  image-with-text.css: no shared components.css exists in this
+  repository yet, so all typography/badge/button styling is defined
+  here rather than assumed. Class names are plain BEM.
+
+  Grid: composes assets/utilities.css's .grid + .md:grid--two directly
+  in featured-product.liquid, same as image-with-text.liquid.
+
+  Media ratio is a merchant setting here (unlike Image with Text, which
+  auto-stretches to match the content column's height on desktop) — the
+  chosen ratio is applied at every breakpoint via --fp-media-ratio, and
+  deliberately never overridden at a wider breakpoint.
+*/
+
+.featured-product {
+  padding-block-start: var(--space-800);
+  padding-block-end: var(--space-800);
+}
+
+.featured-product[data-background="muted"] {
+  background: var(--color-surface-muted);
+}
+
+.featured-product[data-padding-top="none"] {
+  padding-block-start: 0;
+}
+
+.featured-product[data-padding-top="small"] {
+  padding-block-start: var(--space-600);
+}
+
+.featured-product[data-padding-top="medium"] {
+  padding-block-start: var(--space-800);
+}
+
+.featured-product[data-padding-top="large"] {
+  padding-block-start: var(--space-1200);
+}
+
+.featured-product[data-padding-bottom="none"] {
+  padding-block-end: 0;
+}
+
+.featured-product[data-padding-bottom="small"] {
+  padding-block-end: var(--space-600);
+}
+
+.featured-product[data-padding-bottom="medium"] {
+  padding-block-end: var(--space-800);
+}
+
+.featured-product[data-padding-bottom="large"] {
+  padding-block-end: var(--space-1200);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Empty state (Theme Editor only — see liquid file header comment)       */
+/* ---------------------------------------------------------------------- */
+
+.featured-product__empty {
+  padding-block: var(--space-600);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Grid                                                                    */
+/* ---------------------------------------------------------------------- */
+
+.featured-product__grid {
+  gap: var(--space-600);
+}
+
+@media screen and (min-width: 64em) {
+  .featured-product__grid {
+    gap: var(--space-800);
+  }
+}
+
+/* --- Desktop media position ---
+   Mobile always stacks media-then-content (source order); "Right" only
+   changes the visual order at the desktop breakpoint. */
+
+@media screen and (min-width: 48em) {
+  .featured-product[data-media-position="right"] .featured-product__media {
+    order: 2;
+  }
+
+  .featured-product[data-media-position="right"] .featured-product__content-column {
+    order: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Media                                                                  */
+/* Ratio is a merchant setting, applied at every breakpoint — no desktop  */
+/* stretch-to-row-height override (that would fight a chosen ratio).      */
+/* ---------------------------------------------------------------------- */
+
+.featured-product__media {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-default);
+}
+
+.featured-product[data-media-ratio="3:4"] .featured-product__media {
+  aspect-ratio: 3 / 4;
+}
+
+.featured-product[data-media-ratio="4:5"] .featured-product__media {
+  aspect-ratio: 4 / 5;
+}
+
+.featured-product[data-media-ratio="1:1"] .featured-product__media {
+  aspect-ratio: 1 / 1;
+}
+
+.featured-product__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* --- Empty state (no image on the product) ---
+   Same visual language as Hero's / Featured Collection's / Image with
+   Text's placeholders, kept local per this section's self-contained
+   CSS. */
+
+.featured-product__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, var(--color-surface) 0%, var(--color-surface-muted) 100%);
+}
+
+.featured-product__placeholder-mark {
+  width: clamp(3rem, 10vw, 5rem);
+  height: clamp(3rem, 10vw, 5rem);
+  color: var(--color-border);
+}
+
+/* --- Badges ---
+   Text-labeled, never color-only, per DESIGN_SYSTEM.md's accessibility
+   requirement for sale/sold-out states. Sold out takes precedence over
+   sale (a sold-out item's compare price isn't relevant to lead with). */
+
+.featured-product__badge {
+  position: absolute;
+  inset-block-start: var(--space-150);
+  inset-inline-start: var(--space-150);
+  padding-block: var(--space-050);
+  padding-inline: var(--space-150);
+  border-radius: var(--radius-small);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.featured-product__badge--sale {
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.featured-product__badge--sold-out {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Content column                                                         */
+/* ---------------------------------------------------------------------- */
+
+.featured-product__content-column {
+  display: flex;
+}
+
+.featured-product[data-vertical-alignment="top"] .featured-product__content-column {
+  align-items: flex-start;
+}
+
+.featured-product[data-vertical-alignment="center"] .featured-product__content-column {
+  align-items: center;
+}
+
+.featured-product[data-vertical-alignment="bottom"] .featured-product__content-column {
+  align-items: flex-end;
+}
+
+.featured-product__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  width: 100%;
+}
+
+/* --- Content width ---
+   Expressed as a reading measure rather than a spacing token, same
+   reasoning as Hero and Image with Text. "Medium" reuses
+   --container-narrow. */
+
+.featured-product[data-content-width="narrow"] .featured-product__content {
+  max-width: 32rem;
+}
+
+.featured-product[data-content-width="medium"] .featured-product__content {
+  max-width: var(--container-narrow);
+}
+
+.featured-product[data-content-width="wide"] .featured-product__content {
+  max-width: 54rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Typography                                                             */
+/* ---------------------------------------------------------------------- */
+
+.featured-product__vendor {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.featured-product__title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.featured-product__price {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+}
+
+.featured-product__price--sale {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
+}
+
+.featured-product__compare-price {
+  margin-inline-start: var(--space-100);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.featured-product__availability {
+  margin: 0;
+  color: var(--color-success);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+}
+
+.featured-product__availability--sold-out {
+  color: var(--color-text-secondary);
+}
+
+.featured-product__description {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                */
+/* Same box model across variants so switching style never shifts        */
+/* layout. Focus ring comes from the theme-wide :focus-visible rule in    */
+/* base.css.                                                              */
+/* ---------------------------------------------------------------------- */
+
+.featured-product__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-300);
+  margin-block-start: var(--space-100);
+}
+
+.featured-product__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--space-150);
+  padding-inline: var(--space-400);
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-default) var(--ease-standard),
+    border-color var(--duration-default) var(--ease-standard),
+    color var(--duration-default) var(--ease-standard);
+}
+
+.featured-product__button--primary {
+  border-color: var(--color-text-primary);
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+}
+
+.featured-product__button--primary:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.featured-product__button--secondary {
+  border-color: var(--color-text-primary);
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.featured-product__button--secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.featured-product__button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

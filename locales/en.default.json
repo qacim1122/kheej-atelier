@@ -30,6 +30,13 @@
       "view_product": "View product",
       "empty": "No products found in this collection yet.",
       "editor_empty": "Select a collection to preview this section."
+    },
+    "featured_product": {
+      "sale_badge": "Sale",
+      "sold_out_badge": "Sold out",
+      "in_stock": "In stock",
+      "view_product": "View product",
+      "editor_empty": "Select a product to preview this section."
     }
   }
 }
