@@ -42,6 +42,12 @@
       "contact_heading": "Contact",
       "rights_reserved": "All rights reserved.",
       "payment_methods": "Payment methods"
+    },
+    "newsletter": {
+      "email_label": "Email address",
+      "email_placeholder": "Email address",
+      "subscribe": "Subscribe",
+      "success": "Thanks for subscribing."
     }
   }
 }

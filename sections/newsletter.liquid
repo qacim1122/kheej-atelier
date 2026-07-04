@@ -1,0 +1,347 @@
+{% comment %}
+  Newsletter — editorial signup banner. Same architecture as the other
+  sections: self-contained CSS (no shared components.css exists yet),
+  block-based narrative copy, enumerated settings via data-attributes.
+
+  Blocks, not settings, for content: eyebrow/heading/text match Hero's
+  pattern exactly. Email Signup is its own block (limit 1) rather than
+  something always rendered — if a merchant never adds it, the section
+  is just editorial copy with no broken/empty form markup. Secondary
+  CTA is a single button block (limit 1), same shape as the "button"
+  block in Hero/Image with Text/Featured Product.
+
+  Form: a real Shopify customer form tag wraps the email input below —
+  native newsletter signup mechanism. This is a full-page POST/redirect
+  handled entirely server-side; form.posted_successfully? and
+  form.errors are populated by Shopify on the redirect back, so success
+  and error messaging work with zero JavaScript. This is deliberately
+  NOT a decorative <form> with no real action.
+
+  Background: combines Footer's Default/Muted/Dark three-way setting
+  with Hero's optional-image + overlay system. Text goes light whenever
+  either "Dark" is selected OR a background image is present (either
+  implies contrast against something non-light) — see the
+  .newsletter--has-image class and [data-background="dark"] selector in
+  newsletter.css. No placeholder graphic for a missing background image
+  (unlike Hero/Image with Text/Featured Product): the image here is
+  explicitly decorative/optional, so its absence is a valid, unbroken
+  end state, not something needing a graceful stand-in.
+{% endcomment %}
+
+{{ 'newsletter.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign background = section.settings.background
+  assign background_image = section.settings.background_image
+  assign overlay_opacity = section.settings.overlay_opacity
+  assign overlay_color = section.settings.overlay_color
+  assign content_width = section.settings.content_width
+  assign padding_top = section.settings.padding_top
+  assign padding_bottom = section.settings.padding_bottom
+
+  case overlay_color
+    when 'background'
+      assign overlay_color_var = '--color-background'
+    when 'accent'
+      assign overlay_color_var = '--color-accent'
+    else
+      assign overlay_color_var = '--color-text-primary'
+  endcase
+-%}
+
+{%- style -%}
+  #shopify-section-{{ section.id }} .newsletter {
+    --newsletter-overlay-opacity: {{ overlay_opacity | divided_by: 100.0 }};
+    --newsletter-overlay-color: var({{ overlay_color_var }});
+  }
+{%- endstyle -%}
+
+<section
+  class="newsletter{% if background_image != blank %} newsletter--has-image{% endif %}"
+  data-background="{{ background }}"
+  data-content-width="{{ content_width }}"
+  data-padding-top="{{ padding_top }}"
+  data-padding-bottom="{{ padding_bottom }}"
+>
+  {%- if background_image != blank -%}
+    <div class="newsletter__media">
+      {{
+        background_image
+        | image_url: width: 2000
+        | image_tag:
+          loading: 'lazy',
+          sizes: '100vw',
+          widths: '750,1100,1500,2000',
+          class: 'newsletter__image',
+          alt: ''
+      }}
+      {%- if overlay_opacity > 0 -%}
+        <div class="newsletter__overlay" aria-hidden="true"></div>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+
+  <div class="container">
+    <div class="newsletter__content">
+      {%- for block in section.blocks -%}
+        {%- case block.type -%}
+          {%- when 'eyebrow' -%}
+            {%- if block.settings.text != blank -%}
+              <p class="newsletter__eyebrow" {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</p>
+            {%- endif -%}
+
+          {%- when 'heading' -%}
+            {%- if block.settings.text != blank -%}
+              <h2 class="newsletter__title" {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</h2>
+            {%- endif -%}
+
+          {%- when 'text' -%}
+            {%- if block.settings.content != blank -%}
+              <div class="newsletter__subheading" {{ block.shopify_attributes }}>{{ block.settings.content }}</div>
+            {%- endif -%}
+
+          {%- when 'email_signup' -%}
+            <div class="newsletter__form-wrapper" {{ block.shopify_attributes }}>
+              {%- form 'customer', id: 'NewsletterForm-' | append: section.id, class: 'newsletter__form' -%}
+                <input type="hidden" name="contact[tags]" value="newsletter">
+
+                <div class="newsletter__field-group">
+                  <label for="NewsletterEmail-{{ section.id }}" class="visually-hidden">
+                    {{ 'sections.newsletter.email_label' | t }}
+                  </label>
+                  <input
+                    type="email"
+                    name="contact[email]"
+                    id="NewsletterEmail-{{ section.id }}"
+                    class="newsletter__input"
+                    value="{{ form.email }}"
+                    placeholder="{{ 'sections.newsletter.email_placeholder' | t }}"
+                    autocorrect="off"
+                    autocapitalize="off"
+                    autocomplete="email"
+                    required
+                    {% if form.errors %}
+                      aria-invalid="true"
+                      aria-describedby="NewsletterError-{{ section.id }}"
+                    {% endif %}
+                  >
+                  <button type="submit" class="newsletter__button newsletter__button--primary">
+                    {%- if block.settings.button_label != blank -%}
+                      {{ block.settings.button_label | escape }}
+                    {%- else -%}
+                      {{ 'sections.newsletter.subscribe' | t }}
+                    {%- endif -%}
+                  </button>
+                </div>
+
+                {%- if form.errors -%}
+                  <p id="NewsletterError-{{ section.id }}" class="newsletter__message newsletter__message--error" role="alert">
+                    {{ form.errors.translated_fields.email | capitalize }} {{ form.errors.messages.email }}
+                  </p>
+                {%- endif -%}
+
+                {%- if form.posted_successfully? -%}
+                  <p class="newsletter__message newsletter__message--success" role="status">
+                    {{ 'sections.newsletter.success' | t }}
+                  </p>
+                {%- endif -%}
+              {%- endform -%}
+            </div>
+
+          {%- when 'secondary_cta' -%}
+            {%- if block.settings.label != blank -%}
+              <div class="newsletter__secondary-cta" {{ block.shopify_attributes }}>
+                <a
+                  {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% else %}role="link" aria-disabled="true"{% endif %}
+                  class="newsletter__button newsletter__button--{{ block.settings.style }}"
+                >
+                  {{ block.settings.label | escape }}
+                </a>
+              </div>
+            {%- endif -%}
+        {%- endcase -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "options": [
+        { "value": "none", "label": "Default" },
+        { "value": "muted", "label": "Muted" },
+        { "value": "dark", "label": "Dark" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "image_picker",
+      "id": "background_image",
+      "label": "Background image",
+      "info": "Optional."
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Overlay opacity",
+      "info": "Only applies when a background image is set.",
+      "min": 0,
+      "max": 80,
+      "step": 5,
+      "unit": "%",
+      "default": 30
+    },
+    {
+      "type": "select",
+      "id": "overlay_color",
+      "label": "Overlay color",
+      "options": [
+        { "value": "background", "label": "Background" },
+        { "value": "text", "label": "Text" },
+        { "value": "accent", "label": "Accent" }
+      ],
+      "default": "text"
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "wide", "label": "Wide" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "Top spacing",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "Bottom spacing",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "eyebrow",
+      "name": "Eyebrow",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Stay Connected"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Join the list"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Rich text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Be the first to hear about new arrivals and private previews.</p>"
+        }
+      ]
+    },
+    {
+      "type": "email_signup",
+      "name": "Email signup",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "button_label",
+          "label": "Button label",
+          "info": "Optional. Defaults to \"Subscribe\"."
+        }
+      ]
+    },
+    {
+      "type": "secondary_cta",
+      "name": "Secondary CTA",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Style",
+          "options": [
+            { "value": "primary", "label": "Primary" },
+            { "value": "secondary", "label": "Secondary" }
+          ],
+          "default": "secondary"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "text" },
+        { "type": "email_signup" }
+      ]
+    }
+  ]
+}
+{% endschema %}

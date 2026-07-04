@@ -1,0 +1,324 @@
+/*
+  Newsletter section styles.
+
+  Self-contained, same as the other sections: no shared components.css
+  exists yet, so all typography/button/message styling is defined here.
+
+  Background model: a plain Default/Muted/Dark setting (same tokens as
+  Footer's dark mode) combined with Hero's optional-image + overlay
+  system. Text goes light whenever data-background="dark" OR
+  .newsletter--has-image is present — either implies the content needs
+  to read against something other than a plain light surface.
+  tokens.css has no "on-dark" text scale, so muted text on a dark/image
+  background reuses --color-surface at reduced opacity, same technique
+  as hero.css and footer.css.
+*/
+
+.newsletter {
+  position: relative;
+  overflow: hidden;
+  padding-block-start: var(--space-800);
+  padding-block-end: var(--space-800);
+  text-align: center;
+}
+
+.newsletter[data-background="muted"] {
+  background: var(--color-surface-muted);
+}
+
+.newsletter[data-background="dark"] {
+  background: var(--color-text-primary);
+}
+
+.newsletter[data-padding-top="none"] {
+  padding-block-start: 0;
+}
+
+.newsletter[data-padding-top="small"] {
+  padding-block-start: var(--space-600);
+}
+
+.newsletter[data-padding-top="medium"] {
+  padding-block-start: var(--space-800);
+}
+
+.newsletter[data-padding-top="large"] {
+  padding-block-start: var(--space-1200);
+}
+
+.newsletter[data-padding-bottom="none"] {
+  padding-block-end: 0;
+}
+
+.newsletter[data-padding-bottom="small"] {
+  padding-block-end: var(--space-600);
+}
+
+.newsletter[data-padding-bottom="medium"] {
+  padding-block-end: var(--space-800);
+}
+
+.newsletter[data-padding-bottom="large"] {
+  padding-block-end: var(--space-1200);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Background image + overlay                                            */
+/* ---------------------------------------------------------------------- */
+
+.newsletter__media {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-index-base);
+}
+
+.newsletter__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.newsletter__overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--newsletter-overlay-color, var(--color-text-primary));
+  opacity: var(--newsletter-overlay-opacity, 0);
+  pointer-events: none;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Content                                                                */
+/* ---------------------------------------------------------------------- */
+
+.newsletter__content {
+  position: relative;
+  z-index: var(--z-index-raised);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-200);
+  margin-inline: auto;
+}
+
+/* --- Content width ---
+   Expressed as a reading measure rather than a spacing token, same
+   reasoning as Hero. "Medium" reuses --container-narrow. */
+
+.newsletter[data-content-width="narrow"] .newsletter__content {
+  max-width: 28rem;
+}
+
+.newsletter[data-content-width="medium"] .newsletter__content {
+  max-width: var(--container-narrow);
+}
+
+.newsletter[data-content-width="wide"] .newsletter__content {
+  max-width: 44rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Typography                                                             */
+/* ---------------------------------------------------------------------- */
+
+.newsletter__eyebrow {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.newsletter__title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.newsletter__subheading {
+  margin: 0;
+  max-width: 36ch;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.newsletter__subheading p:last-child {
+  margin-block-end: 0;
+}
+
+/* --- Light text on dark background / background image --- */
+
+.newsletter[data-background="dark"] .newsletter__title,
+.newsletter--has-image .newsletter__title {
+  color: var(--color-surface);
+}
+
+.newsletter[data-background="dark"] .newsletter__eyebrow,
+.newsletter[data-background="dark"] .newsletter__subheading,
+.newsletter--has-image .newsletter__eyebrow,
+.newsletter--has-image .newsletter__subheading {
+  color: var(--color-surface);
+  opacity: 0.85;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Form                                                                    */
+/* A real {% form 'customer' %} tag (see newsletter.liquid) — full-page   */
+/* POST/redirect, no JavaScript. Same box model between the input and     */
+/* button so error/success states never shift layout.                    */
+/* ---------------------------------------------------------------------- */
+
+.newsletter__form-wrapper {
+  width: 100%;
+  margin-block-start: var(--space-200);
+}
+
+.newsletter__field-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  width: 100%;
+  max-width: 26rem;
+  margin-inline: auto;
+}
+
+@media screen and (min-width: 30em) {
+  .newsletter__field-group {
+    flex-direction: row;
+  }
+}
+
+.newsletter__input {
+  flex: 1;
+  width: 100%;
+  padding-block: var(--space-150);
+  padding-inline: var(--space-300);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+}
+
+.newsletter__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.newsletter__input[aria-invalid="true"] {
+  border-color: var(--color-error);
+}
+
+.newsletter--has-image .newsletter__input,
+.newsletter[data-background="dark"] .newsletter__input {
+  border-color: transparent;
+}
+
+.newsletter__message {
+  margin: var(--space-150) 0 0;
+  font-size: var(--font-size-caption);
+}
+
+.newsletter__message--error {
+  color: var(--color-error);
+}
+
+.newsletter__message--success {
+  color: var(--color-success);
+}
+
+.newsletter[data-background="dark"] .newsletter__message--success,
+.newsletter--has-image .newsletter__message--success {
+  color: var(--color-surface);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                */
+/* Same box model across variants so switching style never shifts        */
+/* layout. Focus ring comes from the theme-wide :focus-visible rule in    */
+/* base.css.                                                              */
+/* ---------------------------------------------------------------------- */
+
+.newsletter__secondary-cta {
+  margin-block-start: var(--space-100);
+}
+
+.newsletter__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--space-150);
+  padding-inline: var(--space-400);
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-default) var(--ease-standard),
+    border-color var(--duration-default) var(--ease-standard),
+    color var(--duration-default) var(--ease-standard);
+}
+
+.newsletter__button--primary {
+  border-color: var(--color-text-primary);
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+}
+
+.newsletter__button--primary:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.newsletter--has-image .newsletter__button--primary,
+.newsletter[data-background="dark"] .newsletter__button--primary {
+  border-color: var(--color-surface);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+}
+
+.newsletter--has-image .newsletter__button--primary:hover,
+.newsletter[data-background="dark"] .newsletter__button--primary:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.newsletter__button--secondary {
+  border-color: var(--color-text-primary);
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.newsletter__button--secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.newsletter--has-image .newsletter__button--secondary,
+.newsletter[data-background="dark"] .newsletter__button--secondary {
+  border-color: var(--color-surface);
+  color: var(--color-surface);
+}
+
+.newsletter--has-image .newsletter__button--secondary:hover,
+.newsletter[data-background="dark"] .newsletter__button--secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.newsletter__button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
