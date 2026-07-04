@@ -1,0 +1,275 @@
+/*
+  Image with Text section styles.
+
+  Self-contained, same as hero.css / featured-collection.css: no shared
+  components.css exists in this repository yet, so eyebrow/title/
+  subheading/button typography is defined here rather than assumed.
+  Class names are plain BEM so this is easy to re-point at shared
+  components later.
+
+  Grid: composes assets/utilities.css's .grid + .md:grid--two directly
+  in image-with-text.liquid (a static class list, not duplicated here).
+  Only the gap and the desktop reorder/stretch behavior below are
+  specific enough to this section to live in this file.
+*/
+
+.image-with-text {
+  padding-block-start: var(--space-800);
+  padding-block-end: var(--space-800);
+}
+
+.image-with-text[data-background="muted"] {
+  background: var(--color-surface-muted);
+}
+
+.image-with-text[data-padding-top="none"] {
+  padding-block-start: 0;
+}
+
+.image-with-text[data-padding-top="small"] {
+  padding-block-start: var(--space-600);
+}
+
+.image-with-text[data-padding-top="medium"] {
+  padding-block-start: var(--space-800);
+}
+
+.image-with-text[data-padding-top="large"] {
+  padding-block-start: var(--space-1200);
+}
+
+.image-with-text[data-padding-bottom="none"] {
+  padding-block-end: 0;
+}
+
+.image-with-text[data-padding-bottom="small"] {
+  padding-block-end: var(--space-600);
+}
+
+.image-with-text[data-padding-bottom="medium"] {
+  padding-block-end: var(--space-800);
+}
+
+.image-with-text[data-padding-bottom="large"] {
+  padding-block-end: var(--space-1200);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Grid                                                                    */
+/* .grid + .md:grid--two (utilities.css) provide the column structure;    */
+/* this file only adds the larger gap and the desktop-only behaviors      */
+/* (reorder for "Right" position, image stretching to row height) that    */
+/* are specific to pairing an image with a text column.                   */
+/* ---------------------------------------------------------------------- */
+
+.image-with-text__grid {
+  gap: var(--space-600);
+}
+
+@media screen and (min-width: 64em) {
+  .image-with-text__grid {
+    gap: var(--space-800);
+  }
+}
+
+/* --- Desktop image position ---
+   Mobile always stacks image-then-content (source order); "Right" only
+   changes the visual order at the desktop breakpoint. */
+
+@media screen and (min-width: 48em) {
+  .image-with-text[data-image-position="right"] .image-with-text__media {
+    order: 2;
+  }
+
+  .image-with-text[data-image-position="right"] .image-with-text__content-column {
+    order: 1;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Media                                                                  */
+/* Mobile: fixed aspect ratio (the column has no "row height" to match    */
+/* yet, since it's stacked). Desktop: stretches to the grid row's height, */
+/* which the CSS Grid row track already sizes to the taller of the two    */
+/* columns — a common editorial pairing where the image matches however  */
+/* tall the copy turns out to be.                                         */
+/* ---------------------------------------------------------------------- */
+
+.image-with-text__media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-default);
+}
+
+@media screen and (min-width: 48em) {
+  .image-with-text__media {
+    aspect-ratio: auto;
+    height: 100%;
+  }
+}
+
+.image-with-text__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* --- Empty state ---
+   A soft gradient wash + a thin centered mark, rendered whenever no
+   image is set — on the live storefront as much as in the Theme
+   Editor. Same visual language as Hero's and Featured Collection's
+   placeholders, kept local per this section's self-contained CSS. */
+
+.image-with-text__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, var(--color-surface) 0%, var(--color-surface-muted) 100%);
+}
+
+.image-with-text__placeholder-mark {
+  width: clamp(3rem, 10vw, 5rem);
+  height: clamp(3rem, 10vw, 5rem);
+  color: var(--color-border);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Content column                                                         */
+/* ---------------------------------------------------------------------- */
+
+.image-with-text__content-column {
+  display: flex;
+}
+
+.image-with-text[data-vertical-alignment="top"] .image-with-text__content-column {
+  align-items: flex-start;
+}
+
+.image-with-text[data-vertical-alignment="center"] .image-with-text__content-column {
+  align-items: center;
+}
+
+.image-with-text[data-vertical-alignment="bottom"] .image-with-text__content-column {
+  align-items: flex-end;
+}
+
+.image-with-text__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-200);
+  width: 100%;
+}
+
+/* --- Content width ---
+   Expressed as a reading measure rather than a spacing token, same
+   reasoning as Hero: this is a typographic line-length concern, not a
+   layout rhythm value. "Medium" reuses --container-narrow. */
+
+.image-with-text[data-content-width="narrow"] .image-with-text__content {
+  max-width: 32rem;
+}
+
+.image-with-text[data-content-width="medium"] .image-with-text__content {
+  max-width: var(--container-narrow);
+}
+
+.image-with-text[data-content-width="wide"] .image-with-text__content {
+  max-width: 54rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Typography                                                             */
+/* ---------------------------------------------------------------------- */
+
+.image-with-text__eyebrow {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.image-with-text__title {
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.image-with-text__subheading {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.image-with-text__subheading p:last-child {
+  margin-block-end: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons                                                                */
+/* Same box model across variants so switching style never shifts        */
+/* layout. Focus ring comes from the theme-wide :focus-visible rule in    */
+/* base.css.                                                              */
+/* ---------------------------------------------------------------------- */
+
+.image-with-text__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-300);
+  margin-block-start: var(--space-100);
+}
+
+.image-with-text__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-block: var(--space-150);
+  padding-inline: var(--space-400);
+  border: 1px solid transparent;
+  border-radius: var(--radius-default);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--duration-default) var(--ease-standard),
+    border-color var(--duration-default) var(--ease-standard),
+    color var(--duration-default) var(--ease-standard);
+}
+
+.image-with-text__button--primary {
+  border-color: var(--color-text-primary);
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+}
+
+.image-with-text__button--primary:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.image-with-text__button--secondary {
+  border-color: var(--color-text-primary);
+  background: transparent;
+  color: var(--color-text-primary);
+}
+
+.image-with-text__button--secondary:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.image-with-text__button[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}

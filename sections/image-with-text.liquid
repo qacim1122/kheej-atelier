@@ -1,0 +1,295 @@
+{% comment %}
+  Image with Text — editorial two-column section pairing one image with
+  narrative content. Same architecture as sections/hero.liquid and
+  sections/featured-collection.liquid:
+  - Self-contained CSS (no shared components.css exists in this repo).
+  - Narrative copy is block-based (eyebrow/heading/rich text/buttons,
+    same limits and style options as the other two sections) for
+    merchant flexibility; image and layout stay section-level settings.
+  - Enumerated settings applied via data-attributes + a small set of CSS
+    custom properties, no inline style attribute.
+  - Graceful placeholder when no image is set, rendered on the live
+    storefront (not just the Theme Editor) — matches Hero's behavior.
+    Unlike Featured Collection (which has no meaningful content without
+    a collection), this section always renders: it can stand on its
+    text blocks alone.
+
+  Layout note: the image is always first in markup, so mobile always
+  stacks image-then-text regardless of the "Desktop image position"
+  setting. At desktop, "Right" reorders visually via CSS `order` rather
+  than a second, mirrored markup structure.
+
+  Reuses assets/utilities.css's .grid / .md:grid--two directly (composed
+  here via a static class list, not duplicated in image-with-text.css).
+{% endcomment %}
+
+{{ 'image-with-text.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign image = section.settings.image
+  assign image_position = section.settings.image_position
+  assign vertical_alignment = section.settings.vertical_alignment
+  assign content_width = section.settings.content_width
+  assign background = section.settings.background
+  assign padding_top = section.settings.padding_top
+  assign padding_bottom = section.settings.padding_bottom
+
+  assign heading_text = blank
+  for block in section.blocks
+    if block.type == 'heading' and block.settings.text != blank
+      assign heading_text = block.settings.text
+      break
+    endif
+  endfor
+-%}
+
+<section
+  class="image-with-text"
+  data-image-position="{{ image_position }}"
+  data-vertical-alignment="{{ vertical_alignment }}"
+  data-content-width="{{ content_width }}"
+  data-background="{{ background }}"
+  data-padding-top="{{ padding_top }}"
+  data-padding-bottom="{{ padding_bottom }}"
+>
+  <div class="container">
+    <div class="grid md:grid--two image-with-text__grid">
+      <div class="image-with-text__media">
+        {%- if image != blank -%}
+          {{
+            image
+            | image_url: width: 1600
+            | image_tag:
+              loading: 'lazy',
+              sizes: '(min-width: 48em) 50vw, 100vw',
+              widths: '400,700,1000,1600',
+              class: 'image-with-text__image',
+              alt: image.alt | default: heading_text | escape
+          }}
+        {%- else -%}
+          <div class="image-with-text__placeholder" aria-hidden="true">
+            <svg viewBox="0 0 120 120" class="image-with-text__placeholder-mark">
+              <circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
+              <path d="M60 40v40M40 60h40" stroke="currentColor" stroke-width="1"/>
+            </svg>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="image-with-text__content-column">
+        <div class="image-with-text__content">
+          {%- assign buttons_open = false -%}
+          {%- for block in section.blocks -%}
+            {%- case block.type -%}
+              {%- when 'eyebrow' -%}
+                {%- if buttons_open -%}</div>{%- assign buttons_open = false -%}{%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <p class="image-with-text__eyebrow" {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</p>
+                {%- endif -%}
+
+              {%- when 'heading' -%}
+                {%- if buttons_open -%}</div>{%- assign buttons_open = false -%}{%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <h2 class="image-with-text__title" {{ block.shopify_attributes }}>{{ block.settings.text | escape }}</h2>
+                {%- endif -%}
+
+              {%- when 'text' -%}
+                {%- if buttons_open -%}</div>{%- assign buttons_open = false -%}{%- endif -%}
+                {%- if block.settings.content != blank -%}
+                  <div class="image-with-text__subheading" {{ block.shopify_attributes }}>{{ block.settings.content }}</div>
+                {%- endif -%}
+
+              {%- when 'button' -%}
+                {%- if block.settings.label != blank -%}
+                  {%- unless buttons_open -%}
+                    <div class="image-with-text__actions">
+                    {%- assign buttons_open = true -%}
+                  {%- endunless -%}
+                  <a
+                    {% if block.settings.link != blank %}href="{{ block.settings.link }}"{% else %}role="link" aria-disabled="true"{% endif %}
+                    class="image-with-text__button image-with-text__button--{{ block.settings.style }}"
+                    {{ block.shopify_attributes }}
+                  >
+                    {{ block.settings.label | escape }}
+                  </a>
+                {%- endif -%}
+            {%- endcase -%}
+          {%- endfor -%}
+          {%- if buttons_open -%}</div>{%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Image with text",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "If left blank, an editorial placeholder is shown instead of an empty background."
+    },
+    {
+      "type": "header",
+      "content": "Layout"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Desktop image position",
+      "info": "On mobile, the image always appears above the content.",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "vertical_alignment",
+      "label": "Vertical content alignment",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "center", "label": "Center" },
+        { "value": "bottom", "label": "Bottom" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Content width",
+      "options": [
+        { "value": "narrow", "label": "Narrow" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "wide", "label": "Wide" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "options": [
+        { "value": "none", "label": "Default" },
+        { "value": "muted", "label": "Muted" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "select",
+      "id": "padding_top",
+      "label": "Top spacing",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "padding_bottom",
+      "label": "Bottom spacing",
+      "options": [
+        { "value": "none", "label": "None" },
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "eyebrow",
+      "name": "Eyebrow",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Our Story"
+        }
+      ]
+    },
+    {
+      "type": "heading",
+      "name": "Heading",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Made to last"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "Rich text",
+      "settings": [
+        {
+          "type": "richtext",
+          "id": "content",
+          "label": "Content",
+          "default": "<p>Every piece is cut from fabric chosen for how it wears over years, not just how it photographs on day one.</p>"
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "Button",
+      "limit": 2,
+      "settings": [
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Read our story"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        },
+        {
+          "type": "select",
+          "id": "style",
+          "label": "Style",
+          "options": [
+            { "value": "primary", "label": "Primary" },
+            { "value": "secondary", "label": "Secondary" }
+          ],
+          "default": "primary"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Image with text",
+      "blocks": [
+        { "type": "eyebrow" },
+        { "type": "heading" },
+        { "type": "text" },
+        { "type": "button" }
+      ]
+    }
+  ]
+}
+{% endschema %}
