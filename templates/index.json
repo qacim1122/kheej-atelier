@@ -3,12 +3,16 @@
     "hero": {
       "type": "hero"
     },
+    "featured-collection": {
+      "type": "featured-collection"
+    },
     "main": {
       "type": "main-group"
     }
   },
   "order": [
     "hero",
+    "featured-collection",
     "main"
   ]
 }

@@ -23,6 +23,13 @@
     },
     "hero": {
       "scroll_to_content": "Scroll to content"
+    },
+    "featured_collection": {
+      "sale_badge": "Sale",
+      "sold_out_badge": "Sold out",
+      "view_product": "View product",
+      "empty": "No products found in this collection yet.",
+      "editor_empty": "Select a collection to preview this section."
     }
   }
 }
