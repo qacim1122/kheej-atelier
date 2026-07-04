@@ -1,15 +1,22 @@
 ## Current Phase
 
-Homepage Development
+Homepage Complete
 
 ## Completed
 
+- Header
+- Footer
 - Hero
 - Featured Collection
-
-## Next
-
 - Image with Text
 - Featured Product
 - Newsletter
-- Footer
+
+## Next
+
+- Homepage QA
+- Shared Components Refactor
+- Product Template
+- Collection Template
+- Cart
+- Search
