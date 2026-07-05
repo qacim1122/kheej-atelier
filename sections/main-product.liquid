@@ -1,34 +1,42 @@
 {% comment %}
-  Main Product — Milestone 1.
+  Main Product — Milestone 1 + Milestone 2 (variant picker).
 
-  Scope is deliberately narrow: media, title, vendor, price,
-  description, and a real add-to-cart form. No variant picker, no
-  quantity selector, no dynamic checkout, no tabs, no related products —
-  all explicitly deferred to later milestones.
+  Milestone 1 scope (media, title, vendor, price, description, add-to-
+  cart form) is unchanged below; see those inline comments still in
+  place. This adds ONLY: variant picker, per-option fieldsets, sold-out
+  option states, selected-option state, and single-variant graceful
+  handling. No quantity selector, no dynamic checkout, no gallery, no
+  JS — all still explicitly out of scope.
 
-  Self-contained per the brief: no shared components.css dependency, no
-  new snippets, no refactor of existing sections/CSS. Price/badge markup
-  is intentionally inline rather than pulled into a snippet — the same
-  logic already exists in featured-collection.liquid and
-  featured-product.liquid, and extracting a shared snippet now would be
-  a refactor, which this milestone explicitly excludes.
+  No-JS variant resolution, read this before touching the logic below:
+  Shopify Liquid has no generic way to read arbitrary query-string
+  params — only the special ?variant=ID one, which the platform parses
+  server-side into product.selected_variant. That means a client-side-
+  only radio picker cannot correctly resolve which variant a
+  multi-option combination (e.g. Color + Size) points to without either
+  JavaScript or a real page round-trip — anything that merely looked
+  like a working picker without one of those would risk adding the
+  wrong variant to the cart. So: every option EXCEPT THE LAST gets its
+  own small GET-method form targeting the product URL; picking a
+  value and submitting that form's "Update" button reloads the page
+  with the best-matching variant (this option = the new value, every
+  other option = whatever the current variant already has) reflected in
+  a fresh ?variant= — which is a real, native, fully-supported Shopify
+  mechanism. The LAST option's radios instead render directly inside
+  the add-to-cart form as name="id", since by that point every other
+  dimension is already fixed and each remaining choice maps to exactly
+  one variant with no ambiguity — no extra round-trip needed there.
+  Net effect: a single-option product (just "Size") gets a fully clean,
+  zero-extra-reload picker; a two-option product (Color + Size) takes
+  one intermediate reload; a three-option product takes two. This is
+  the actual ceiling of "correct variant selection with zero
+  JavaScript," not an implementation shortcut.
 
-  Media: featured image only, not a gallery. Product media becomes
-  variant-linked once a variant picker exists, so a static multi-image
-  gallery built now would likely need rework in that milestone anyway —
-  a single stable image is the safer boundary for this pass.
-
-  Add-to-cart: a real Shopify product form tag wraps the submit button
-  /cart/add, not decorative). Uses
-  product.selected_or_first_available_variant since there's no variant
-  picker yet — this is an honest limitation, not an oversight: a
-  multi-variant product can only be purchased as whichever variant that
-  resolves to (the first available one, or whichever is set via a
-  ?variant= URL parameter) until the variant-picker milestone lands.
-
-  No settings: this milestone's brief listed no "Section Settings", so
-  none are invented here — layout and spacing are fixed via tokens
-  directly rather than exposed as merchant choices that don't exist yet.
+  Each value's target variant is computed via product.variants filtered
+  with the `where` filter against Shopify's real positional option1/
+  option2/option3 variant properties — which is exactly why this stays
+  correct for 1, 2, or 3 options (Shopify's own hard limit) without
+  needing per-count special-casing.
 {% endcomment %}
 
 {{ 'main-product.css' | asset_url | stylesheet_tag }}
@@ -38,6 +46,10 @@
   assign variant = product.selected_or_first_available_variant
   assign compare_at_price = variant.compare_at_price
   assign price = variant.price
+  assign has_variants = product.has_only_default_variant == false
+  assign options = product.options_with_values
+  assign option_count = options.size
+  assign last_option = options.last
 -%}
 
 <section class="main-product">
@@ -86,8 +98,121 @@
           <div class="main-product__description">{{ product.description }}</div>
         {%- endif -%}
 
+        {%- if has_variants and option_count > 1 -%}
+          <div class="main-product__options">
+            {%- for option in options -%}
+              {%- assign option_position = forloop.index -%}
+              {%- unless forloop.last -%}
+                <form method="get" action="{{ product.url }}" class="main-product__option-form">
+                  <fieldset class="main-product__option">
+                    <legend class="main-product__option-legend">{{ option.name | escape }}</legend>
+                    <div class="main-product__option-values">
+                      {%- for value in option.values -%}
+                        {%- liquid
+                          assign candidates = product.variants
+                          for other in options
+                            assign other_position = forloop.index
+                            assign other_key = 'option' | append: other_position
+                            if other_position == option_position
+                              assign candidates = candidates | where: other_key, value
+                            else
+                              assign fixed_value = variant.options[forloop.index0]
+                              assign candidates = candidates | where: other_key, fixed_value
+                            endif
+                          endfor
+                          assign matched_variant = candidates.first
+                          assign current_value = variant.options[option_position | minus: 1]
+                          assign is_checked = false
+                          if current_value == value
+                            assign is_checked = true
+                          endif
+                          assign is_unavailable = true
+                          if matched_variant != blank and matched_variant.available
+                            assign is_unavailable = false
+                          endif
+                        -%}
+                        <span class="main-product__option-value">
+                          <input
+                            type="radio"
+                            name="variant"
+                            id="Option-{{ section.id }}-{{ option_position }}-{{ forloop.index }}"
+                            value="{{ matched_variant.id }}"
+                            class="main-product__option-input visually-hidden"
+                            {% if is_checked %}checked{% endif %}
+                            {% if is_unavailable %}disabled{% endif %}
+                          >
+                          <label for="Option-{{ section.id }}-{{ option_position }}-{{ forloop.index }}" class="main-product__option-label">
+                            {{ value | escape }}
+                            {%- if is_unavailable -%}
+                              <span class="visually-hidden"> ({{ 'sections.main_product.sold_out' | t }})</span>
+                            {%- endif -%}
+                          </label>
+                        </span>
+                      {%- endfor -%}
+                    </div>
+                  </fieldset>
+                  <button type="submit" class="main-product__option-update">
+                    {{ 'sections.main_product.update_selection' | t }}
+                  </button>
+                </form>
+              {%- endunless -%}
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
         {%- form 'product', product, class: 'main-product__form' -%}
-          <input type="hidden" name="id" value="{{ variant.id }}">
+          {%- if has_variants -%}
+            {%- assign last_option_position = option_count -%}
+            <fieldset class="main-product__option">
+              <legend class="main-product__option-legend">{{ last_option.name | escape }}</legend>
+              <div class="main-product__option-values">
+                {%- for value in last_option.values -%}
+                  {%- liquid
+                    assign candidates = product.variants
+                    for other in options
+                      assign other_position = forloop.index
+                      assign other_key = 'option' | append: other_position
+                      if other_position == last_option_position
+                        assign candidates = candidates | where: other_key, value
+                      else
+                        assign fixed_value = variant.options[forloop.index0]
+                        assign candidates = candidates | where: other_key, fixed_value
+                      endif
+                    endfor
+                    assign matched_variant = candidates.first
+                    assign current_value = variant.options[last_option_position | minus: 1]
+                    assign is_checked = false
+                    if current_value == value
+                      assign is_checked = true
+                    endif
+                    assign is_unavailable = true
+                    if matched_variant != blank and matched_variant.available
+                      assign is_unavailable = false
+                    endif
+                  -%}
+                  <span class="main-product__option-value">
+                    <input
+                      type="radio"
+                      name="id"
+                      id="Option-{{ section.id }}-final-{{ forloop.index }}"
+                      value="{{ matched_variant.id }}"
+                      class="main-product__option-input visually-hidden"
+                      {% if is_checked %}checked{% endif %}
+                      {% if is_unavailable %}disabled{% endif %}
+                    >
+                    <label for="Option-{{ section.id }}-final-{{ forloop.index }}" class="main-product__option-label">
+                      {{ value | escape }}
+                      {%- if is_unavailable -%}
+                        <span class="visually-hidden"> ({{ 'sections.main_product.sold_out' | t }})</span>
+                      {%- endif -%}
+                    </label>
+                  </span>
+                {%- endfor -%}
+              </div>
+            </fieldset>
+          {%- else -%}
+            <input type="hidden" name="id" value="{{ variant.id }}">
+          {%- endif -%}
           <button
             type="submit"
             name="add"

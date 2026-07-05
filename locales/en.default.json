@@ -51,7 +51,8 @@
     },
     "main_product": {
       "add_to_cart": "Add to cart",
-      "sold_out": "Sold out"
+      "sold_out": "Sold out",
+      "update_selection": "Update selection"
     }
   }
 }

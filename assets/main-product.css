@@ -130,6 +130,125 @@
 }
 
 /* ---------------------------------------------------------------------- */
+/* Variant picker                                                         */
+/* Native <fieldset>/<legend> per option, native radios — no ARIA needed. */
+/* Radios use utilities.css's .visually-hidden (not display:none, so they */
+/* stay focusable); checked/disabled state is projected onto the visible  */
+/* sibling <label> via adjacent-sibling selectors, and the focus ring is  */
+/* projected the same way so keyboard users still see it despite the     */
+/* input itself being visually hidden.                                    */
+/* ---------------------------------------------------------------------- */
+
+.main-product__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-300);
+  margin-block-start: var(--space-100);
+}
+
+.main-product__option-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-150);
+}
+
+.main-product__option {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 100%;
+}
+
+.main-product__option-legend {
+  padding: 0;
+  margin-block-end: var(--space-150);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.main-product__option-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-150);
+}
+
+.main-product__option-value {
+  position: relative;
+}
+
+.main-product__option-label {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--space-600);
+  padding-block: var(--space-100);
+  padding-inline: var(--space-200);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-default) var(--ease-standard),
+    border-color var(--duration-default) var(--ease-standard),
+    color var(--duration-default) var(--ease-standard);
+}
+
+.main-product__option-input:checked + .main-product__option-label {
+  border-color: var(--color-text-primary);
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+}
+
+.main-product__option-input:focus-visible + .main-product__option-label {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.main-product__option-input:disabled + .main-product__option-label {
+  border-color: var(--color-border);
+  background: var(--color-surface-muted);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+
+.main-product__option-update {
+  padding-block: var(--space-100);
+  padding-inline: var(--space-300);
+  border: 1px solid var(--color-text-primary);
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.02em;
+  transition:
+    background-color var(--duration-default) var(--ease-standard),
+    border-color var(--duration-default) var(--ease-standard),
+    color var(--duration-default) var(--ease-standard);
+}
+
+.main-product__option-update:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* The final option's fieldset lives inside .main-product__form itself
+   (see main-product.liquid) — this margin keeps it visually consistent
+   with the intermediate ones above it without needing a second class. */
+.main-product__form .main-product__option {
+  margin-block-end: var(--space-300);
+}
+
+/* ---------------------------------------------------------------------- */
 /* Add-to-cart form                                                       */
 /* A real {% form 'product' %} tag (see liquid file) — genuine POST to    */
 /* /cart/add, not decorative. Disabled state stays visually distinct     */
