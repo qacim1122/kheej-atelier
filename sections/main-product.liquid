@@ -1,0 +1,113 @@
+{% comment %}
+  Main Product — Milestone 1.
+
+  Scope is deliberately narrow: media, title, vendor, price,
+  description, and a real add-to-cart form. No variant picker, no
+  quantity selector, no dynamic checkout, no tabs, no related products —
+  all explicitly deferred to later milestones.
+
+  Self-contained per the brief: no shared components.css dependency, no
+  new snippets, no refactor of existing sections/CSS. Price/badge markup
+  is intentionally inline rather than pulled into a snippet — the same
+  logic already exists in featured-collection.liquid and
+  featured-product.liquid, and extracting a shared snippet now would be
+  a refactor, which this milestone explicitly excludes.
+
+  Media: featured image only, not a gallery. Product media becomes
+  variant-linked once a variant picker exists, so a static multi-image
+  gallery built now would likely need rework in that milestone anyway —
+  a single stable image is the safer boundary for this pass.
+
+  Add-to-cart: a real Shopify product form tag wraps the submit button
+  /cart/add, not decorative). Uses
+  product.selected_or_first_available_variant since there's no variant
+  picker yet — this is an honest limitation, not an oversight: a
+  multi-variant product can only be purchased as whichever variant that
+  resolves to (the first available one, or whichever is set via a
+  ?variant= URL parameter) until the variant-picker milestone lands.
+
+  No settings: this milestone's brief listed no "Section Settings", so
+  none are invented here — layout and spacing are fixed via tokens
+  directly rather than exposed as merchant choices that don't exist yet.
+{% endcomment %}
+
+{{ 'main-product.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign featured_image = product.featured_image
+  assign variant = product.selected_or_first_available_variant
+  assign compare_at_price = variant.compare_at_price
+  assign price = variant.price
+-%}
+
+<section class="main-product">
+  <div class="container">
+    <div class="grid md:grid--two main-product__grid">
+      <div class="main-product__media">
+        {%- if featured_image != blank -%}
+          {{
+            featured_image
+            | image_url: width: 1600
+            | image_tag:
+              loading: 'eager',
+              fetchpriority: 'high',
+              sizes: '(min-width: 48em) 50vw, 100vw',
+              widths: '400,700,1000,1600',
+              class: 'main-product__image',
+              alt: featured_image.alt | default: product.title | escape
+          }}
+        {%- else -%}
+          <div class="main-product__placeholder" aria-hidden="true">
+            <svg viewBox="0 0 120 120" class="main-product__placeholder-mark">
+              <circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
+              <path d="M60 40v40M40 60h40" stroke="currentColor" stroke-width="1"/>
+            </svg>
+          </div>
+        {%- endif -%}
+      </div>
+
+      <div class="main-product__content">
+        {%- if product.vendor != blank -%}
+          <p class="main-product__vendor">{{ product.vendor | escape }}</p>
+        {%- endif -%}
+
+        <h1 class="main-product__title">{{ product.title | escape }}</h1>
+
+        <p class="main-product__price">
+          {%- if compare_at_price > price -%}
+            <span class="main-product__price--sale">{{ price | money }}</span>
+            <span class="main-product__compare-price">{{ compare_at_price | money }}</span>
+          {%- else -%}
+            {{ price | money }}
+          {%- endif -%}
+        </p>
+
+        {%- if product.description != blank -%}
+          <div class="main-product__description">{{ product.description }}</div>
+        {%- endif -%}
+
+        {%- form 'product', product, class: 'main-product__form' -%}
+          <input type="hidden" name="id" value="{{ variant.id }}">
+          <button
+            type="submit"
+            name="add"
+            class="main-product__button"
+            {% if variant.available == false %}disabled{% endif %}
+          >
+            {%- if variant.available -%}
+              {{ 'sections.main_product.add_to_cart' | t }}
+            {%- else -%}
+              {{ 'sections.main_product.sold_out' | t }}
+            {%- endif -%}
+          </button>
+        {%- endform -%}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Product information"
+}
+{% endschema %}

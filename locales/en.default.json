@@ -48,6 +48,10 @@
       "email_placeholder": "Email address",
       "subscribe": "Subscribe",
       "success": "Thanks for subscribing."
+    },
+    "main_product": {
+      "add_to_cart": "Add to cart",
+      "sold_out": "Sold out"
     }
   }
 }
