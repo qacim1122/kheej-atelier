@@ -1,45 +1,35 @@
 {% comment %}
-  Main Product — Milestone 1 + Milestone 2 (variant picker).
+  Main Product — Milestone 1 + 2 (unchanged, see prior inline comments)
+  + Milestone 3 (JS enhancement layer).
 
-  Milestone 1 scope (media, title, vendor, price, description, add-to-
-  cart form) is unchanged below; see those inline comments still in
-  place. This adds ONLY: variant picker, per-option fieldsets, sold-out
-  option states, selected-option state, and single-variant graceful
-  handling. No quantity selector, no dynamic checkout, no gallery, no
-  JS — all still explicitly out of scope.
+  Progressive enhancement: everything below still works exactly as
+  Milestone 2 left it with JavaScript disabled — the wrapping custom
+  element is just an unrecognized custom element until JS defines it, so it
+  renders as an inert wrapper with no effect on the existing forms/
+  radios/hrefs. product-form.js hooks in via connectedCallback and does
+  three things: (1) prevents the intermediate GET-forms' default
+  navigation, (2) recomputes the matching variant client-side on every
+  radio change using a JSON payload of product.variants, and (3)
+  updates price/compare-price/button state/add-to-cart id/featured
+  image directly, no reload.
 
-  No-JS variant resolution, read this before touching the logic below:
-  Shopify Liquid has no generic way to read arbitrary query-string
-  params — only the special ?variant=ID one, which the platform parses
-  server-side into product.selected_variant. That means a client-side-
-  only radio picker cannot correctly resolve which variant a
-  multi-option combination (e.g. Color + Size) points to without either
-  JavaScript or a real page round-trip — anything that merely looked
-  like a working picker without one of those would risk adding the
-  wrong variant to the cart. So: every option EXCEPT THE LAST gets its
-  own small GET-method form targeting the product URL; picking a
-  value and submitting that form's "Update" button reloads the page
-  with the best-matching variant (this option = the new value, every
-  other option = whatever the current variant already has) reflected in
-  a fresh ?variant= — which is a real, native, fully-supported Shopify
-  mechanism. The LAST option's radios instead render directly inside
-  the add-to-cart form as name="id", since by that point every other
-  dimension is already fixed and each remaining choice maps to exactly
-  one variant with no ambiguity — no extra round-trip needed there.
-  Net effect: a single-option product (just "Size") gets a fully clean,
-  zero-extra-reload picker; a two-option product (Color + Size) takes
-  one intermediate reload; a three-option product takes two. This is
-  the actual ceiling of "correct variant selection with zero
-  JavaScript," not an implementation shortcut.
+  Important: the existing radio `value` attributes from Milestone 2 are
+  pre-computed at page-LOAD time and go stale the instant JS changes a
+  different option without reloading — so JS never trusts a radio's
+  `value` for matching. Each radio also carries data-option-position
+  and data-option-value (the raw option string, e.g. "Red") specifically
+  so the JS can recompute matches itself; the `value` attribute is then
+  kept in sync by JS purely so the no-JS submission path (name="id")
+  stays correct if JS fails partway or is unavailable.
 
-  Each value's target variant is computed via product.variants filtered
-  with the `where` filter against Shopify's real positional option1/
-  option2/option3 variant properties — which is exactly why this stays
-  correct for 1, 2, or 3 options (Shopify's own hard limit) without
-  needing per-count special-casing.
+  Variant prices are pre-formatted server-side (via the money filter)
+  into the JSON payload, not reconstructed in JS — currency/locale
+  formatting is shop-configurable and genuinely complex; reimplementing
+  it client-side would be fragile and wrong for non-USD shops.
 {% endcomment %}
 
 {{ 'main-product.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'product-form.js' | asset_url }}" defer></script>
 
 {%- liquid
   assign featured_image = product.featured_image
@@ -54,8 +44,27 @@
 
 <section class="main-product">
   <div class="container">
-    <div class="grid md:grid--two main-product__grid">
-      <div class="main-product__media">
+    <variant-picker>
+      {%- if has_variants -%}
+        {%- capture variants_json -%}
+          [
+            {%- for v in product.variants -%}
+              {
+                "id": {{ v.id | json }},
+                "available": {{ v.available | json }},
+                "options": {{ v.options | json }},
+                "price": {{ v.price | money | json }},
+                "compare_at_price": {% if v.compare_at_price > v.price %}{{ v.compare_at_price | money | json }}{% else %}null{% endif %},
+                "featured_image": {% if v.featured_image %}{ "src": {{ v.featured_image | image_url: width: 1600 | json }}, "alt": {{ v.featured_image.alt | default: product.title | json }} }{% else %}null{% endif %}
+              }{% unless forloop.last %},{% endunless %}
+            {%- endfor -%}
+          ]
+        {%- endcapture -%}
+        <script type="application/json" data-product-variants>{{ variants_json }}</script>
+      {%- endif -%}
+
+      <div class="grid md:grid--two main-product__grid">
+        <div class="main-product__media">
         {%- if featured_image != blank -%}
           {{
             featured_image
@@ -85,7 +94,7 @@
 
         <h1 class="main-product__title">{{ product.title | escape }}</h1>
 
-        <p class="main-product__price">
+        <p class="main-product__price" aria-live="polite">
           {%- if compare_at_price > price -%}
             <span class="main-product__price--sale">{{ price | money }}</span>
             <span class="main-product__compare-price">{{ compare_at_price | money }}</span>
@@ -137,6 +146,8 @@
                             name="variant"
                             id="Option-{{ section.id }}-{{ option_position }}-{{ forloop.index }}"
                             value="{{ matched_variant.id }}"
+                            data-option-position="{{ option_position }}"
+                            data-option-value="{{ value | escape }}"
                             class="main-product__option-input visually-hidden"
                             {% if is_checked %}checked{% endif %}
                             {% if is_unavailable %}disabled{% endif %}
@@ -196,6 +207,8 @@
                       name="id"
                       id="Option-{{ section.id }}-final-{{ forloop.index }}"
                       value="{{ matched_variant.id }}"
+                      data-option-position="{{ last_option_position }}"
+                      data-option-value="{{ value | escape }}"
                       class="main-product__option-input visually-hidden"
                       {% if is_checked %}checked{% endif %}
                       {% if is_unavailable %}disabled{% endif %}
@@ -217,6 +230,8 @@
             type="submit"
             name="add"
             class="main-product__button"
+            data-add-to-cart-label="{{ 'sections.main_product.add_to_cart' | t }}"
+            data-sold-out-label="{{ 'sections.main_product.sold_out' | t }}"
             {% if variant.available == false %}disabled{% endif %}
           >
             {%- if variant.available -%}
@@ -227,7 +242,8 @@
           </button>
         {%- endform -%}
       </div>
-    </div>
+      </div>
+    </variant-picker>
   </div>
 </section>
 
