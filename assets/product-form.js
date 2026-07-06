@@ -9,11 +9,8 @@ class VariantPicker extends HTMLElement {
     this.variants = JSON.parse(dataScript.textContent);
     this.priceEl = this.querySelector('.main-product__price');
     this.addToCartButton = this.querySelector('.main-product__button');
-    this.mediaImage = this.querySelector('.main-product__image');
-
-    this.defaultImage = this.mediaImage
-      ? { src: this.mediaImage.getAttribute('src'), alt: this.mediaImage.getAttribute('alt') }
-      : null;
+    this.gallery = this.querySelector('product-gallery');
+    this.defaultMediaId = this.gallery ? this.gallery.dataset.defaultMediaId : null;
 
     this.optionForms = Array.from(this.querySelectorAll('form[method="get"]'));
     this.selection = this.readSelection();
@@ -134,22 +131,70 @@ class VariantPicker extends HTMLElement {
       : this.addToCartButton.dataset.soldOutLabel;
   }
 
+  // Reuses ProductGallery (Milestone 4) rather than touching an <img>
+  // directly — the gallery already renders every image, so this only
+  // needs to say which one should be active. Defensive typeof check:
+  // product-gallery is defined before variant-picker below specifically
+  // so this is always available by the time it's called, but this
+  // guards against that ordering assumption ever quietly breaking.
   updateImage(variant) {
-    if (!this.mediaImage) return;
+    if (!this.gallery || typeof this.gallery.activateByMediaId !== 'function') return;
 
-    const image = (variant && variant.featured_image) || this.defaultImage;
-    if (!image) return;
+    const mediaId = (variant && variant.featured_media_id) || this.defaultMediaId;
+    if (!mediaId) return;
 
-    // A single resolved URL, not a full responsive set — the JSON
-    // payload only carries one size per variant image (see
-    // main-product.liquid), so any stale srcset/sizes from the initial
-    // server render is cleared to avoid the browser picking a mismatched
-    // candidate over the new src.
-    this.mediaImage.setAttribute('src', image.src);
-    this.mediaImage.setAttribute('alt', image.alt);
-    this.mediaImage.removeAttribute('srcset');
-    this.mediaImage.removeAttribute('sizes');
+    this.gallery.activateByMediaId(mediaId);
   }
+}
+
+class ProductGallery extends HTMLElement {
+  connectedCallback() {
+    this.items = Array.from(this.querySelectorAll('.main-product__gallery-item'));
+    this.thumbnails = Array.from(this.querySelectorAll('.main-product__thumbnail'));
+    if (this.items.length <= 1) return;
+
+    this.onThumbnailClick = this.onThumbnailClick.bind(this);
+    this.thumbnails.forEach((thumbnail) => thumbnail.addEventListener('click', this.onThumbnailClick));
+
+    // This is the only thing that switches the gallery from "all images
+    // stacked" (the no-JS baseline, see main-product.liquid) into
+    // "one image at a time" — see main-product.css.
+    this.classList.add('main-product__gallery--js');
+  }
+
+  disconnectedCallback() {
+    this.thumbnails.forEach((thumbnail) => thumbnail.removeEventListener('click', this.onThumbnailClick));
+  }
+
+  onThumbnailClick(event) {
+    event.preventDefault();
+    this.activateByMediaId(event.currentTarget.dataset.mediaId);
+  }
+
+  activateByMediaId(mediaId) {
+    if (!mediaId) return;
+
+    const id = String(mediaId);
+
+    this.items.forEach((item) => {
+      item.classList.toggle('is-active', item.dataset.mediaId === id);
+    });
+
+    this.thumbnails.forEach((thumbnail) => {
+      const isActive = thumbnail.dataset.mediaId === id;
+      thumbnail.classList.toggle('is-active', isActive);
+      thumbnail.setAttribute('aria-current', String(isActive));
+    });
+  }
+}
+
+// product-gallery is defined before variant-picker: VariantPicker calls
+// gallery.activateByMediaId() from its own connectedCallback (via
+// render()), and <product-gallery> is nested inside <variant-picker> in
+// the markup — so the gallery element must already be upgraded with its
+// methods before the picker's initial render() runs.
+if (!customElements.get('product-gallery')) {
+  customElements.define('product-gallery', ProductGallery);
 }
 
 if (!customElements.get('variant-picker')) {

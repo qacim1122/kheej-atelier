@@ -1,5 +1,5 @@
 /*
-  Main Product section styles — Milestone 1.
+  Main Product section styles — Milestones 1-4.
 
   Self-contained: no shared components.css dependency, matching every
   other section built so far. No merchant settings exist yet, so
@@ -32,27 +32,95 @@
 }
 
 /* ---------------------------------------------------------------------- */
-/* Media                                                                  */
-/* Featured image only — see liquid file header comment for why a        */
-/* gallery isn't built in this milestone.                                 */
+/* Media gallery                                                          */
+/* No-JS: .main-product__gallery-list is a plain vertical stack, every    */
+/* image visible, real anchor-linked thumbnails scroll natively. With JS, */
+/* ProductGallery (product-form.js) adds .main-product__gallery--js,      */
+/* which is the only thing that switches this into "one image at a time". */
 /* ---------------------------------------------------------------------- */
 
 .main-product__media {
+  position: relative;
+}
+
+.main-product__gallery-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-300);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-product__gallery-item {
   position: relative;
   overflow: hidden;
   aspect-ratio: 4 / 5;
   background: var(--color-surface-muted);
   border-radius: var(--radius-default);
+  /* Keeps an anchor-scrolled-to image from landing flush against the
+     top of the viewport if a sticky header is ever introduced later. */
+  scroll-margin-top: var(--space-800);
 }
 
-.main-product__image {
+.main-product__gallery-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
 }
 
-/* --- Empty state: no featured image ---
+/* --- JS-enhanced: single-image mode --- */
+
+.main-product__gallery--js .main-product__gallery-list {
+  gap: 0;
+}
+
+.main-product__gallery--js .main-product__gallery-item {
+  display: none;
+}
+
+.main-product__gallery--js .main-product__gallery-item.is-active {
+  display: block;
+}
+
+/* --- Thumbnails --- */
+
+.main-product__thumbnails {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-150);
+  margin: var(--space-300) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-product__thumbnail {
+  display: block;
+  width: var(--space-800);
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: var(--radius-small);
+  transition: border-color var(--duration-default) var(--ease-standard);
+}
+
+.main-product__thumbnail.is-active {
+  border-color: var(--color-text-primary);
+}
+
+.main-product__thumbnail:focus-visible {
+  outline-offset: 2px;
+}
+
+.main-product__thumbnail-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* --- Empty state: product has no images at all ---
    Same visual language as every other section's placeholder (soft
    gradient + thin centered mark), kept local since no shared snippet
    exists and this milestone doesn't create one. */
@@ -63,7 +131,9 @@
   justify-content: center;
   width: 100%;
   height: 100%;
+  aspect-ratio: 4 / 5;
   background: linear-gradient(160deg, var(--color-surface) 0%, var(--color-surface-muted) 100%);
+  border-radius: var(--radius-default);
 }
 
 .main-product__placeholder-mark {
