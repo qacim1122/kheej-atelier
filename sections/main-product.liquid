@@ -281,6 +281,36 @@
           {%- else -%}
             <input type="hidden" name="id" value="{{ variant.id }}">
           {%- endif -%}
+
+          <quantity-selector class="main-product__quantity">
+            <label for="Quantity-{{ section.id }}" class="main-product__quantity-label">
+              {{ 'sections.main_product.quantity_label' | t }}
+            </label>
+            <div class="main-product__quantity-controls">
+              <button
+                type="button"
+                class="main-product__quantity-button main-product__quantity-button--decrease"
+                aria-label="{{ 'sections.main_product.decrease_quantity' | t }}"
+                aria-controls="Quantity-{{ section.id }}"
+              >&minus;</button>
+              <input
+                type="number"
+                name="quantity"
+                id="Quantity-{{ section.id }}"
+                class="main-product__quantity-input"
+                value="1"
+                min="1"
+                inputmode="numeric"
+              >
+              <button
+                type="button"
+                class="main-product__quantity-button main-product__quantity-button--increase"
+                aria-label="{{ 'sections.main_product.increase_quantity' | t }}"
+                aria-controls="Quantity-{{ section.id }}"
+              >&plus;</button>
+            </div>
+          </quantity-selector>
+
           <button
             type="submit"
             name="add"
@@ -295,6 +325,10 @@
               {{ 'sections.main_product.sold_out' | t }}
             {%- endif -%}
           </button>
+
+          <div class="main-product__dynamic-checkout">
+            {{ form | payment_button }}
+          </div>
         {%- endform -%}
       </div>
       </div>

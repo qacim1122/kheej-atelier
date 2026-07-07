@@ -200,3 +200,71 @@ if (!customElements.get('product-gallery')) {
 if (!customElements.get('variant-picker')) {
   customElements.define('variant-picker', VariantPicker);
 }
+
+// Independent of VariantPicker/ProductGallery — no ordering dependency
+// with either. The native number input is always the source of truth:
+// current value is read fresh from it on every action, never cached in
+// a separate property that could drift out of sync.
+class QuantitySelector extends HTMLElement {
+  connectedCallback() {
+    this.input = this.querySelector('.main-product__quantity-input');
+    this.decreaseButton = this.querySelector('.main-product__quantity-button--decrease');
+    this.increaseButton = this.querySelector('.main-product__quantity-button--increase');
+    if (!this.input || !this.decreaseButton || !this.increaseButton) return;
+
+    this.onDecrease = this.onDecrease.bind(this);
+    this.onIncrease = this.onIncrease.bind(this);
+    this.onInputChange = this.onInputChange.bind(this);
+
+    this.decreaseButton.addEventListener('click', this.onDecrease);
+    this.increaseButton.addEventListener('click', this.onIncrease);
+    this.input.addEventListener('change', this.onInputChange);
+
+    // Only reveals the custom +/- buttons once JS confirms it can drive
+    // them (see main-product.css) — the native input's own browser
+    // spinner is the sole increment/decrement mechanism until then.
+    this.classList.add('main-product__quantity--js');
+
+    this.updateDecreaseState();
+  }
+
+  disconnectedCallback() {
+    this.decreaseButton.removeEventListener('click', this.onDecrease);
+    this.increaseButton.removeEventListener('click', this.onIncrease);
+    this.input.removeEventListener('change', this.onInputChange);
+  }
+
+  get min() {
+    return Number(this.input.min) || 1;
+  }
+
+  onDecrease() {
+    this.setValue(this.currentValue() - 1);
+  }
+
+  onIncrease() {
+    this.setValue(this.currentValue() + 1);
+  }
+
+  onInputChange() {
+    this.setValue(this.currentValue());
+  }
+
+  currentValue() {
+    const value = Math.trunc(Number(this.input.value));
+    return Number.isFinite(value) ? value : this.min;
+  }
+
+  setValue(value) {
+    this.input.value = Math.max(this.min, value);
+    this.updateDecreaseState();
+  }
+
+  updateDecreaseState() {
+    this.decreaseButton.disabled = this.currentValue() <= this.min;
+  }
+}
+
+if (!customElements.get('quantity-selector')) {
+  customElements.define('quantity-selector', QuantitySelector);
+}

@@ -1,5 +1,5 @@
 /*
-  Main Product section styles — Milestones 1-4.
+  Main Product section styles — Milestones 1-5.
 
   Self-contained: no shared components.css dependency, matching every
   other section built so far. No merchant settings exist yet, so
@@ -361,4 +361,87 @@
 .main-product__button:hover:not(:disabled) {
   border-color: var(--color-accent);
   background: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Quantity selector                                                      */
+/* Native number input is the source of truth and is fully functional on */
+/* its own (browser spinner, keyboard, min="1" validation) without JS —   */
+/* the custom +/- buttons are hidden by default and only revealed by a    */
+/* JS-added modifier class, same progressive-enhancement pattern as the   */
+/* gallery's .main-product__gallery--js modifier (Milestone 4). Showing   */
+/* non-functional buttons with JS disabled would be worse than omitting   */
+/* them.                                                                   */
+/* ---------------------------------------------------------------------- */
+
+.main-product__quantity {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-100);
+  margin-block-start: var(--space-200);
+}
+
+.main-product__quantity-label {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.main-product__quantity-controls {
+  display: inline-flex;
+  align-items: stretch;
+  width: fit-content;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  overflow: hidden;
+}
+
+.main-product__quantity-input {
+  width: 3.5rem;
+  padding-block: var(--space-150);
+  padding-inline: var(--space-100);
+  border: 0;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  text-align: center;
+}
+
+.main-product__quantity-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-600);
+  border: 0;
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body);
+  line-height: 1;
+  transition: background-color var(--duration-default) var(--ease-standard);
+}
+
+.main-product__quantity-button:hover:not(:disabled) {
+  background: var(--color-border);
+}
+
+/* Only revealed once .main-product__quantity--js confirms JS is driving
+   them (see product-form.js) — until then, the native input's own
+   browser spinner is the only increment/decrement mechanism. */
+.main-product__quantity--js .main-product__quantity-button {
+  display: inline-flex;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Dynamic checkout                                                       */
+/* Shopify renders its own payment buttons (Shop Pay, PayPal, etc.) as a  */
+/* non-customizable hosted component — only wrapper spacing is styled     */
+/* here, never the button's own appearance.                               */
+/* ---------------------------------------------------------------------- */
+
+.main-product__dynamic-checkout {
+  margin-block-start: var(--space-200);
 }
