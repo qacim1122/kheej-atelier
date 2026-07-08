@@ -1,9 +1,47 @@
 {% comment %}
-  Main Product — Milestones 1-3 (unchanged, see prior inline comments)
-  + Milestone 4 (media gallery).
+  Main Product — Milestones 1-5 (unchanged, see prior inline comments)
+  + final pass: Inventory & Availability, Product Information accordions,
+  Related Products.
+
+  Inventory: low-stock threshold is a hardcoded 5 (inventory_quantity <=
+  5), not a merchant setting — deliberate simplification, can become
+  configurable later if needed. Availability state (in stock / low stock
+  / backorder / sold out) mirrors the same instant-update discipline as
+  price/image from Milestone 3: the variants JSON payload also carries
+  inventory_tracked/inventory_quantity/continue_selling, and
+  VariantPicker recomputes the same 4-state logic client-side so
+  switching variants without a reload keeps quantity's max and the
+  status text in sync — leaving them stale after a JS-driven switch
+  would be a real regression given Milestone 3 already made everything
+  else instant.
+
+  Accordions: native disclosure elements (details/summary) — free
+  keyboard support, no
+  ARIA needed, no JS. Product description itself is left exactly as
+  Milestone 1 built it (plain, always visible) rather than folded into
+  an accordion, since moving already-working content would cross into
+  "refactoring existing code"; only Shipping/Returns/Care Instructions
+  are new accordion panels, sourced from new richtext settings (this
+  section's first-ever schema settings array). Each is independently
+  optional and simply doesn't render if left blank.
+
+  Related Products: real Shopify recommendations (routes.
+  product_recommendations_url, fetched via product-form.js), with a
+  same-collection server-rendered fallback that is what actually shows
+  on a normal page load (recommendations.performed is only ever true
+  when Shopify's recommendations-rendering context fetches this exact
+  markup) — so something always shows without depending on JS, and JS
+  only upgrades it to genuinely algorithmic results when the fetch
+  succeeds. Card markup/classes here are new and self-contained
+  (main-product__recommendation-*), not the featured-collection.css
+  .product-card classes — that stylesheet isn't loaded on this
+  template, so reusing its class names without its CSS would silently
+  produce unstyled markup. Values (aspect ratio, badge treatment,
+  stretched-link pattern, typography tokens) deliberately mirror
+  featured-collection.css's .product-card as closely as possible.
 
   No-JS baseline: all product images render as a single stacked list of
-  real, individually-anchorable list items (each with its own id), with real
+  real, individually-anchorable list items (each with its own id), with
   real anchor-linked thumbnails — native anchor-scroll, no JS. With
   JS, ProductGallery (product-form.js) adds one modifier class that
   switches the stack into "only show the active item" mode and
@@ -40,6 +78,15 @@
   assign option_count = options.size
   assign last_option = options.last
   assign active_media_id = variant.featured_image.id | default: product.featured_image.id
+  assign low_stock_threshold = 5
+  assign inventory_tracked = false
+  if variant.inventory_management != blank
+    assign inventory_tracked = true
+  endif
+  assign continue_selling = false
+  if variant.inventory_policy == 'continue'
+    assign continue_selling = true
+  endif
 -%}
 
 <section class="main-product">
@@ -55,7 +102,10 @@
                 "options": {{ v.options | json }},
                 "price": {{ v.price | money | json }},
                 "compare_at_price": {% if v.compare_at_price > v.price %}{{ v.compare_at_price | money | json }}{% else %}null{% endif %},
-                "featured_media_id": {% if v.featured_image %}{{ v.featured_image.id | json }}{% else %}null{% endif %}
+                "featured_media_id": {% if v.featured_image %}{{ v.featured_image.id | json }}{% else %}null{% endif %},
+                "inventory_tracked": {% if v.inventory_management != blank %}true{% else %}false{% endif %},
+                "inventory_quantity": {{ v.inventory_quantity | json }},
+                "continue_selling": {% if v.inventory_policy == 'continue' %}true{% else %}false{% endif %}
               }{% unless forloop.last %},{% endunless %}
             {%- endfor -%}
           ]
@@ -155,6 +205,28 @@
             <span class="main-product__compare-price">{{ compare_at_price | money }}</span>
           {%- else -%}
             {{ price | money }}
+          {%- endif -%}
+        </p>
+
+        <p
+          class="main-product__availability"
+          aria-live="polite"
+          data-in-stock-label="{{ 'sections.main_product.in_stock' | t }}"
+          data-sold-out-label="{{ 'sections.main_product.sold_out' | t }}"
+          data-backorder-label="{{ 'sections.main_product.backorder' | t }}"
+          data-low-stock-template="{{ 'sections.main_product.low_stock_count' | t: count: 'COUNT_PLACEHOLDER' }}"
+          data-low-stock-threshold="{{ low_stock_threshold }}"
+        >
+          {%- if variant.available == false -%}
+            <span class="main-product__availability-status main-product__availability-status--sold-out">{{ 'sections.main_product.sold_out' | t }}</span>
+          {%- elsif inventory_tracked == false -%}
+            <span class="main-product__availability-status main-product__availability-status--in-stock">{{ 'sections.main_product.in_stock' | t }}</span>
+          {%- elsif variant.inventory_quantity <= 0 and continue_selling -%}
+            <span class="main-product__availability-status main-product__availability-status--backorder">{{ 'sections.main_product.backorder' | t }}</span>
+          {%- elsif variant.inventory_quantity > 0 and variant.inventory_quantity <= low_stock_threshold -%}
+            <span class="main-product__availability-status main-product__availability-status--low-stock">{{ 'sections.main_product.low_stock_count' | t: count: variant.inventory_quantity }}</span>
+          {%- else -%}
+            <span class="main-product__availability-status main-product__availability-status--in-stock">{{ 'sections.main_product.in_stock' | t }}</span>
           {%- endif -%}
         </p>
 
@@ -300,6 +372,9 @@
                 class="main-product__quantity-input"
                 value="1"
                 min="1"
+                {% if inventory_tracked and continue_selling == false and variant.inventory_quantity > 0 %}
+                  max="{{ variant.inventory_quantity }}"
+                {% endif %}
                 inputmode="numeric"
               >
               <button
@@ -330,14 +405,140 @@
             {{ form | payment_button }}
           </div>
         {%- endform -%}
+
+        {%- if section.settings.shipping_content != blank or section.settings.returns_content != blank or section.settings.care_content != blank -%}
+          <div class="main-product__accordions">
+            {%- if section.settings.shipping_content != blank -%}
+              <details class="main-product__accordion">
+                <summary class="main-product__accordion-summary">{{ 'sections.main_product.shipping_heading' | t }}</summary>
+                <div class="main-product__accordion-content">{{ section.settings.shipping_content }}</div>
+              </details>
+            {%- endif -%}
+            {%- if section.settings.returns_content != blank -%}
+              <details class="main-product__accordion">
+                <summary class="main-product__accordion-summary">{{ 'sections.main_product.returns_heading' | t }}</summary>
+                <div class="main-product__accordion-content">{{ section.settings.returns_content }}</div>
+              </details>
+            {%- endif -%}
+            {%- if section.settings.care_content != blank -%}
+              <details class="main-product__accordion">
+                <summary class="main-product__accordion-summary">{{ 'sections.main_product.care_heading' | t }}</summary>
+                <div class="main-product__accordion-content">{{ section.settings.care_content }}</div>
+              </details>
+            {%- endif -%}
+          </div>
+        {%- endif -%}
       </div>
       </div>
     </variant-picker>
   </div>
 </section>
 
+{%- liquid
+  assign show_recommendations = recommendations.performed
+  assign display_products = recommendations.products
+  if show_recommendations == false
+    assign fallback_collection = product.collections.first
+    assign display_products = fallback_collection.products
+  endif
+-%}
+
+<product-recommendations
+  id="ProductRecommendations-{{ section.id }}"
+  class="main-product__recommendations"
+  data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit=4&intent=related"
+>
+  <div class="container">
+    <h2 class="main-product__recommendations-heading">{{ 'sections.main_product.related_heading' | t }}</h2>
+
+    {%- assign shown_count = 0 -%}
+    <ul class="grid md:grid--two main-product__recommendations-grid" role="list">
+      {%- for item in display_products -%}
+        {%- unless item.id == product.id -%}
+          {%- if shown_count < 4 -%}
+            {%- assign shown_count = shown_count | plus: 1 -%}
+            <li>
+              <div class="main-product__recommendation-card">
+                <div class="main-product__recommendation-media">
+                  {%- if item.featured_image != blank -%}
+                    {{
+                      item.featured_image
+                      | image_url: width: 800
+                      | image_tag:
+                        loading: 'lazy',
+                        sizes: '(min-width: 48em) 25vw, 50vw',
+                        widths: '300,500,800',
+                        class: 'main-product__recommendation-image',
+                        alt: item.featured_image.alt | default: item.title | escape
+                    }}
+                  {%- else -%}
+                    <div class="main-product__recommendation-placeholder" aria-hidden="true">
+                      <svg viewBox="0 0 120 120" class="main-product__recommendation-placeholder-mark">
+                        <circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
+                        <path d="M60 40v40M40 60h40" stroke="currentColor" stroke-width="1"/>
+                      </svg>
+                    </div>
+                  {%- endif -%}
+
+                  {%- if item.available == false -%}
+                    <span class="main-product__recommendation-badge main-product__recommendation-badge--sold-out">{{ 'sections.main_product.sold_out' | t }}</span>
+                  {%- elsif item.compare_at_price > item.price -%}
+                    <span class="main-product__recommendation-badge main-product__recommendation-badge--sale">{{ 'sections.main_product.sale_badge' | t }}</span>
+                  {%- endif -%}
+                </div>
+
+                <div class="main-product__recommendation-content">
+                  <h3 class="main-product__recommendation-title">
+                    <a href="{{ item.url }}" class="main-product__recommendation-link">{{ item.title | escape }}</a>
+                  </h3>
+                  <p class="main-product__recommendation-price">
+                    {%- if item.compare_at_price > item.price -%}
+                      <span class="main-product__recommendation-price--sale">{{ item.price | money }}</span>
+                      <span class="main-product__recommendation-compare-price">{{ item.compare_at_price | money }}</span>
+                    {%- else -%}
+                      {{ item.price | money }}
+                    {%- endif -%}
+                  </p>
+                </div>
+              </div>
+            </li>
+          {%- endif -%}
+        {%- endunless -%}
+      {%- endfor -%}
+    </ul>
+
+    {%- if shown_count == 0 -%}
+      <p class="main-product__recommendations-empty">{{ 'sections.main_product.related_empty' | t }}</p>
+    {%- endif -%}
+  </div>
+</product-recommendations>
+
 {% schema %}
 {
-  "name": "Product information"
+  "name": "Product information",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Product information"
+    },
+    {
+      "type": "richtext",
+      "id": "shipping_content",
+      "label": "Shipping content",
+      "info": "Optional. Leave blank to hide this section."
+    },
+    {
+      "type": "richtext",
+      "id": "returns_content",
+      "label": "Returns content",
+      "info": "Optional. Leave blank to hide this section."
+    },
+    {
+      "type": "richtext",
+      "id": "care_content",
+      "label": "Care instructions",
+      "info": "Optional. Leave blank to hide this section."
+    }
+  ]
 }
 {% endschema %}

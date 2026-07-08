@@ -1,5 +1,6 @@
 /*
-  Main Product section styles — Milestones 1-5.
+  Main Product section styles — Milestones 1-5 + final pass (inventory,
+  accordions, related products).
 
   Self-contained: no shared components.css dependency, matching every
   other section built so far. No merchant settings exist yet, so
@@ -444,4 +445,225 @@
 
 .main-product__dynamic-checkout {
   margin-block-start: var(--space-200);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Availability status                                                    */
+/* Text-labeled, never color-only. aria-live="polite" (see liquid file)   */
+/* announces JS-driven changes on instant variant switching, same         */
+/* pattern as .main-product__price.                                       */
+/* ---------------------------------------------------------------------- */
+
+.main-product__availability {
+  margin: 0;
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+}
+
+.main-product__availability-status--in-stock {
+  color: var(--color-success);
+}
+
+.main-product__availability-status--low-stock {
+  color: var(--color-warning);
+}
+
+.main-product__availability-status--backorder {
+  color: var(--color-text-secondary);
+}
+
+.main-product__availability-status--sold-out {
+  color: var(--color-text-secondary);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Accordions                                                             */
+/* Native <details>/<summary> — no custom disclosure styling needed for   */
+/* keyboard/AT support, only visual treatment.                            */
+/* ---------------------------------------------------------------------- */
+
+.main-product__accordions {
+  margin-block-start: var(--space-400);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.main-product__accordion {
+  border-block-end: 1px solid var(--color-border);
+}
+
+.main-product__accordion-summary {
+  padding-block: var(--space-200);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.main-product__accordion-summary:focus-visible {
+  outline-offset: 2px;
+}
+
+.main-product__accordion-content {
+  padding-block-end: var(--space-300);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  line-height: var(--line-height-body);
+}
+
+.main-product__accordion-content p:last-child {
+  margin-block-end: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Related products                                                       */
+/* Card values (aspect ratio, badge treatment, stretched-link pattern,    */
+/* typography tokens) deliberately mirror featured-collection.css's       */
+/* .product-card as closely as possible — see liquid file header comment  */
+/* for why this is a separate, self-contained copy rather than a shared   */
+/* class (that stylesheet isn't loaded on this template).                 */
+/* ---------------------------------------------------------------------- */
+
+.main-product__recommendations {
+  padding-block: var(--space-1200);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.main-product__recommendations-heading {
+  margin: 0 0 var(--space-600);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.main-product__recommendations-grid {
+  gap: var(--space-500);
+}
+
+.main-product__recommendations-empty {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+}
+
+.main-product__recommendation-card {
+  position: relative;
+}
+
+.main-product__recommendation-media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-default);
+}
+
+.main-product__recommendation-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform var(--duration-slow) var(--ease-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .main-product__recommendation-card:hover .main-product__recommendation-image {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .main-product__recommendation-image {
+    transition: none;
+  }
+}
+
+.main-product__recommendation-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, var(--color-surface) 0%, var(--color-surface-muted) 100%);
+}
+
+.main-product__recommendation-placeholder-mark {
+  width: clamp(2.5rem, 8vw, 4rem);
+  height: clamp(2.5rem, 8vw, 4rem);
+  color: var(--color-border);
+}
+
+.main-product__recommendation-badge {
+  position: absolute;
+  inset-block-start: var(--space-150);
+  inset-inline-start: var(--space-150);
+  padding-block: var(--space-050);
+  padding-inline: var(--space-150);
+  border-radius: var(--radius-small);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.main-product__recommendation-badge--sale {
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.main-product__recommendation-badge--sold-out {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.main-product__recommendation-content {
+  padding-block-start: var(--space-200);
+}
+
+.main-product__recommendation-title {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.main-product__recommendation-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.main-product__recommendation-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-index-raised);
+}
+
+.main-product__recommendation-link:focus-visible {
+  outline: none;
+}
+
+.main-product__recommendation-link:focus-visible::after {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.main-product__recommendation-price {
+  margin: var(--space-050) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-small);
+}
+
+.main-product__recommendation-price--sale {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
+}
+
+.main-product__recommendation-compare-price {
+  margin-inline-start: var(--space-100);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
 }

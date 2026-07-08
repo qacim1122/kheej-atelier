@@ -55,7 +55,16 @@
       "update_selection": "Update selection",
       "quantity_label": "Quantity",
       "decrease_quantity": "Decrease quantity",
-      "increase_quantity": "Increase quantity"
+      "increase_quantity": "Increase quantity",
+      "in_stock": "In stock",
+      "low_stock_count": "Only {{ count }} left",
+      "backorder": "Available on backorder",
+      "shipping_heading": "Shipping",
+      "returns_heading": "Returns",
+      "care_heading": "Care instructions",
+      "related_heading": "You may also like",
+      "related_empty": "No related products found.",
+      "sale_badge": "Sale"
     }
   }
 }

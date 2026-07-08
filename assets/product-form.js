@@ -11,6 +11,8 @@ class VariantPicker extends HTMLElement {
     this.addToCartButton = this.querySelector('.main-product__button');
     this.gallery = this.querySelector('product-gallery');
     this.defaultMediaId = this.gallery ? this.gallery.dataset.defaultMediaId : null;
+    this.availabilityEl = this.querySelector('.main-product__availability');
+    this.quantitySelector = this.querySelector('quantity-selector');
 
     this.optionForms = Array.from(this.querySelectorAll('form[method="get"]'));
     this.selection = this.readSelection();
@@ -74,7 +76,9 @@ class VariantPicker extends HTMLElement {
 
     this.updateOptionStates();
     this.updatePrice(variant);
+    this.updateAvailability(variant);
     this.updateAddToCart(variant);
+    this.updateQuantityMax(variant);
     this.updateImage(variant);
   }
 
@@ -120,6 +124,52 @@ class VariantPicker extends HTMLElement {
     }
   }
 
+  // Mirrors the same 4-state logic main-product.liquid computes
+  // server-side (in stock / low stock / backorder / sold out) so
+  // switching variants without a reload keeps this in sync — leaving it
+  // stale would be a real regression given price/image are already
+  // instant. Labels and the low-stock threshold come from data
+  // attributes (set from real translated/merchant-configured values),
+  // never hardcoded English strings here.
+  computeAvailability(variant) {
+    if (!variant || !this.availabilityEl) return null;
+
+    const el = this.availabilityEl;
+    const threshold = Number(el.dataset.lowStockThreshold) || 5;
+
+    if (!variant.available) {
+      return { modifier: 'sold-out', label: el.dataset.soldOutLabel };
+    }
+
+    if (!variant.inventory_tracked) {
+      return { modifier: 'in-stock', label: el.dataset.inStockLabel };
+    }
+
+    if (variant.inventory_quantity <= 0 && variant.continue_selling) {
+      return { modifier: 'backorder', label: el.dataset.backorderLabel };
+    }
+
+    if (variant.inventory_quantity > 0 && variant.inventory_quantity <= threshold) {
+      const template = el.dataset.lowStockTemplate || '';
+      return { modifier: 'low-stock', label: template.replace('COUNT_PLACEHOLDER', variant.inventory_quantity) };
+    }
+
+    return { modifier: 'in-stock', label: el.dataset.inStockLabel };
+  }
+
+  updateAvailability(variant) {
+    const status = this.computeAvailability(variant);
+    if (!status) return;
+
+    this.availabilityEl.textContent = '';
+
+    const span = document.createElement('span');
+    span.className = `main-product__availability-status main-product__availability-status--${status.modifier}`;
+    span.textContent = status.label;
+
+    this.availabilityEl.append(span);
+  }
+
   updateAddToCart(variant) {
     if (!this.addToCartButton) return;
 
@@ -129,6 +179,19 @@ class VariantPicker extends HTMLElement {
     this.addToCartButton.textContent = available
       ? this.addToCartButton.dataset.addToCartLabel
       : this.addToCartButton.dataset.soldOutLabel;
+  }
+
+  // Defensive typeof check, same reasoning as updateImage below: relies
+  // on quantity-selector being defined before variant-picker.
+  updateQuantityMax(variant) {
+    if (!this.quantitySelector || typeof this.quantitySelector.setMax !== 'function') return;
+
+    let max = null;
+    if (variant && variant.inventory_tracked && !variant.continue_selling && variant.inventory_quantity > 0) {
+      max = variant.inventory_quantity;
+    }
+
+    this.quantitySelector.setMax(max);
   }
 
   // Reuses ProductGallery (Milestone 4) rather than touching an <img>
@@ -188,23 +251,12 @@ class ProductGallery extends HTMLElement {
   }
 }
 
-// product-gallery is defined before variant-picker: VariantPicker calls
-// gallery.activateByMediaId() from its own connectedCallback (via
-// render()), and <product-gallery> is nested inside <variant-picker> in
-// the markup — so the gallery element must already be upgraded with its
-// methods before the picker's initial render() runs.
-if (!customElements.get('product-gallery')) {
-  customElements.define('product-gallery', ProductGallery);
-}
-
-if (!customElements.get('variant-picker')) {
-  customElements.define('variant-picker', VariantPicker);
-}
-
 // Independent of VariantPicker/ProductGallery — no ordering dependency
 // with either. The native number input is always the source of truth:
 // current value is read fresh from it on every action, never cached in
-// a separate property that could drift out of sync.
+// a separate property that could drift out of sync. setMax() is the
+// public hook VariantPicker calls when a variant switch changes the
+// available inventory ceiling.
 class QuantitySelector extends HTMLElement {
   connectedCallback() {
     this.input = this.querySelector('.main-product__quantity-input');
@@ -225,7 +277,7 @@ class QuantitySelector extends HTMLElement {
     // spinner is the sole increment/decrement mechanism until then.
     this.classList.add('main-product__quantity--js');
 
-    this.updateDecreaseState();
+    this.updateButtonStates();
   }
 
   disconnectedCallback() {
@@ -236,6 +288,10 @@ class QuantitySelector extends HTMLElement {
 
   get min() {
     return Number(this.input.min) || 1;
+  }
+
+  get max() {
+    return this.input.max === '' ? Infinity : Number(this.input.max);
   }
 
   onDecrease() {
@@ -256,15 +312,81 @@ class QuantitySelector extends HTMLElement {
   }
 
   setValue(value) {
-    this.input.value = Math.max(this.min, value);
-    this.updateDecreaseState();
+    this.input.value = Math.min(this.max, Math.max(this.min, value));
+    this.updateButtonStates();
   }
 
-  updateDecreaseState() {
-    this.decreaseButton.disabled = this.currentValue() <= this.min;
+  // Called by VariantPicker after a variant switch. max === null means
+  // untracked/backorder-eligible inventory — no ceiling.
+  setMax(max) {
+    if (max === null || max === undefined) {
+      this.input.removeAttribute('max');
+    } else {
+      this.input.max = max;
+    }
+
+    if (this.currentValue() > this.max) {
+      this.input.value = this.max;
+    }
+
+    this.updateButtonStates();
   }
+
+  updateButtonStates() {
+    const value = this.currentValue();
+    this.decreaseButton.disabled = value <= this.min;
+    this.increaseButton.disabled = value >= this.max;
+  }
+}
+
+// Fully independent — no data dependency on the other two.
+// recommendations.performed is only ever true when Shopify's
+// recommendations-rendering context fetches this exact section markup
+// (see main-product.liquid); on a normal page load it's always false,
+// so the server-rendered same-collection fallback is what's already
+// visible before this ever runs. This only upgrades that fallback to
+// genuinely algorithmic results if the fetch succeeds — a failed fetch
+// or JS being unavailable simply leaves the fallback in place.
+class ProductRecommendations extends HTMLElement {
+  connectedCallback() {
+    const url = this.dataset.url;
+    if (!url) return;
+
+    fetch(url)
+      .then((response) => (response.ok ? response.text() : null))
+      .then((html) => {
+        if (!html) return;
+
+        const parsed = new DOMParser().parseFromString(html, 'text/html');
+        const fetched = parsed.getElementById(this.id);
+        if (fetched && fetched.innerHTML.trim()) {
+          this.innerHTML = fetched.innerHTML;
+        }
+      })
+      .catch(() => {
+        // Network error or similar — the server-rendered fallback
+        // already in the DOM remains exactly as it was.
+      });
+  }
+}
+
+// product-gallery and quantity-selector are both defined before
+// variant-picker: VariantPicker calls methods on both from its own
+// connectedCallback (via render()), and both are nested inside
+// <variant-picker> in the markup — so they must already be upgraded
+// with their methods before the picker's initial render() runs.
+if (!customElements.get('product-gallery')) {
+  customElements.define('product-gallery', ProductGallery);
 }
 
 if (!customElements.get('quantity-selector')) {
   customElements.define('quantity-selector', QuantitySelector);
+}
+
+if (!customElements.get('variant-picker')) {
+  customElements.define('variant-picker', VariantPicker);
+}
+
+if (!customElements.get('product-recommendations')) {
+  customElements.define('product-recommendations', ProductRecommendations);
 }
