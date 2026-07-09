@@ -2,6 +2,15 @@
   "general": {
     "accessibility": {
       "skip_to_content": "Skip to content"
+    },
+    "product": {
+      "sale": "Sale",
+      "sold_out": "Sold out"
+    },
+    "pagination": {
+      "label": "Pagination",
+      "previous": "Previous",
+      "next": "Next"
     }
   },
   "sections": {
@@ -65,6 +74,20 @@
       "related_heading": "You may also like",
       "related_empty": "No related products found.",
       "sale_badge": "Sale"
+    },
+    "main_collection": {
+      "empty": "No products found in this collection.",
+      "sort_label": "Sort by",
+      "sort_apply": "Apply"
+    },
+    "main_search": {
+      "title": "Search",
+      "input_label": "Search",
+      "input_placeholder": "Search products",
+      "submit": "Search",
+      "prompt": "Enter a search term to get started.",
+      "empty": "No results found for \"{{ terms }}\".",
+      "results_count": "{{ count }} results"
     }
   }
 }

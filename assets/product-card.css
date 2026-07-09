@@ -1,0 +1,133 @@
+/*
+  Shared product card styles — used by snippets/product-card.liquid
+  (Collection and Search templates only; see that file's header comment
+  for why Featured Collection and the Product template's recommendation
+  cards keep their own separate, pre-existing copies rather than being
+  migrated here).
+
+  Values (aspect ratio, badge treatment, stretched-link pattern,
+  typography tokens) mirror featured-collection.css's .product-card as
+  closely as possible, same principle applied when the Product
+  template's recommendation cards were built.
+*/
+
+.product-card {
+  position: relative;
+}
+
+.product-card__media {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 3 / 4;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-default);
+}
+
+.product-card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scale(1);
+  transition: transform var(--duration-slow) var(--ease-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .product-card:hover .product-card__image {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .product-card__image {
+    transition: none;
+  }
+}
+
+.product-card__placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(160deg, var(--color-surface) 0%, var(--color-surface-muted) 100%);
+}
+
+.product-card__placeholder-mark {
+  width: clamp(2.5rem, 8vw, 4rem);
+  height: clamp(2.5rem, 8vw, 4rem);
+  color: var(--color-border);
+}
+
+.product-card__badge {
+  position: absolute;
+  inset-block-start: var(--space-150);
+  inset-inline-start: var(--space-150);
+  padding-block: var(--space-050);
+  padding-inline: var(--space-150);
+  border-radius: var(--radius-small);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.product-card__badge--sale {
+  background: var(--color-accent);
+  color: var(--color-surface);
+}
+
+.product-card__badge--sold-out {
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.product-card__content {
+  padding-block-start: var(--space-200);
+}
+
+.product-card__title {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.product-card__link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.product-card__link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-index-raised);
+}
+
+.product-card__link:focus-visible {
+  outline: none;
+}
+
+.product-card__link:focus-visible::after {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.product-card__price {
+  margin: var(--space-050) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-small);
+}
+
+.product-card__price--sale {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
+}
+
+.product-card__compare-price {
+  margin-inline-start: var(--space-100);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}

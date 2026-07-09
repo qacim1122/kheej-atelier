@@ -1,0 +1,53 @@
+/*
+  Shared pagination styles — used by snippets/pagination.liquid
+  (Collection and Search templates).
+*/
+
+.pagination {
+  margin-block-start: var(--space-800);
+}
+
+.pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-100);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pagination__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--space-600);
+  padding-block: var(--space-100);
+  padding-inline: var(--space-200);
+  border-radius: var(--radius-default);
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  text-decoration: none;
+  transition: background-color var(--duration-default) var(--ease-standard);
+}
+
+a.pagination__link:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+}
+
+.pagination__link--current {
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+}
+
+.pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--space-600);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-body-small);
+}

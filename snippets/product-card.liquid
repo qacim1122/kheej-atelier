@@ -1,0 +1,62 @@
+{%- comment -%}
+  Reusable product card — used by the Collection and Search templates
+  (sections/main-collection.liquid, sections/main-search.liquid), the
+  first genuinely shared snippet in this theme.
+
+  Not retrofitted into Featured Collection or the Product template's
+  recommendation cards: both already have their own working, self-
+  contained inline versions, and this task's scope is the Collection
+  and Search templates, not a refactor of already-completed work. Going
+  forward there are three implementations of this pattern rather than
+  one — a known, deliberate trade-off, not an oversight.
+
+  Accepts:
+  - card_product: a product object (named to avoid colliding with an
+    outer `product` object on templates that have one)
+{%- endcomment -%}
+
+{{ 'product-card.css' | asset_url | stylesheet_tag }}
+
+<div class="product-card">
+  <div class="product-card__media">
+    {%- if card_product.featured_image != blank -%}
+      {{
+        card_product.featured_image
+        | image_url: width: 800
+        | image_tag:
+          loading: 'lazy',
+          sizes: '(min-width: 64em) 25vw, (min-width: 48em) 33vw, 50vw',
+          widths: '300,500,800',
+          class: 'product-card__image',
+          alt: card_product.featured_image.alt | default: card_product.title | escape
+      }}
+    {%- else -%}
+      <div class="product-card__placeholder" aria-hidden="true">
+        <svg viewBox="0 0 120 120" class="product-card__placeholder-mark">
+          <circle cx="60" cy="60" r="38" fill="none" stroke="currentColor" stroke-width="1"/>
+          <path d="M60 40v40M40 60h40" stroke="currentColor" stroke-width="1"/>
+        </svg>
+      </div>
+    {%- endif -%}
+
+    {%- if card_product.available == false -%}
+      <span class="product-card__badge product-card__badge--sold-out">{{ 'general.product.sold_out' | t }}</span>
+    {%- elsif card_product.compare_at_price > card_product.price -%}
+      <span class="product-card__badge product-card__badge--sale">{{ 'general.product.sale' | t }}</span>
+    {%- endif -%}
+  </div>
+
+  <div class="product-card__content">
+    <h3 class="product-card__title">
+      <a href="{{ card_product.url }}" class="product-card__link">{{ card_product.title | escape }}</a>
+    </h3>
+    <p class="product-card__price">
+      {%- if card_product.compare_at_price > card_product.price -%}
+        <span class="product-card__price--sale">{{ card_product.price | money }}</span>
+        <span class="product-card__compare-price">{{ card_product.compare_at_price | money }}</span>
+      {%- else -%}
+        {{ card_product.price | money }}
+      {%- endif -%}
+    </p>
+  </div>
+</div>

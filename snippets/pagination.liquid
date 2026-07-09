@@ -1,0 +1,45 @@
+{%- comment -%}
+  Reusable pagination — used by the Collection and Search templates.
+  Real <a href> links (paginate.next/.previous/.parts), fully functional
+  with no JavaScript; Shopify's paginate URLs already preserve other
+  current query params (e.g. sort_by) automatically.
+
+  Accepts:
+  - paginate: the {% paginate %} tag's paginate object
+{%- endcomment -%}
+
+{{ 'pagination.css' | asset_url | stylesheet_tag }}
+
+{%- if paginate.pages > 1 -%}
+  <nav class="pagination" aria-label="{{ 'general.pagination.label' | t }}">
+    <ul class="pagination__list" role="list">
+      {%- if paginate.previous -%}
+        <li>
+          <a href="{{ paginate.previous.url }}" class="pagination__link pagination__link--prev" rel="prev">
+            {{ 'general.pagination.previous' | t }}
+          </a>
+        </li>
+      {%- endif -%}
+
+      {%- for part in paginate.parts -%}
+        <li>
+          {%- if part.is_link -%}
+            <a href="{{ part.url }}" class="pagination__link">{{ part.title }}</a>
+          {%- elsif part.title == paginate.current_page -%}
+            <span class="pagination__link pagination__link--current" aria-current="page">{{ part.title }}</span>
+          {%- else -%}
+            <span class="pagination__ellipsis" aria-hidden="true">{{ part.title }}</span>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+
+      {%- if paginate.next -%}
+        <li>
+          <a href="{{ paginate.next.url }}" class="pagination__link pagination__link--next" rel="next">
+            {{ 'general.pagination.next' | t }}
+          </a>
+        </li>
+      {%- endif -%}
+    </ul>
+  </nav>
+{%- endif -%}

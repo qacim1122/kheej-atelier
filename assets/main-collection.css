@@ -1,0 +1,113 @@
+/*
+  Main Collection section styles.
+
+  Self-contained, same discipline as every other section: no shared
+  components.css dependency. Grid composes assets/utilities.css's .grid
+  + .grid--two + .md:grid--two / .md:grid--three directly (composed via
+  Liquid in main-collection.liquid), same discipline as Featured
+  Collection — desktop columns capped at 2/3 for the same reason
+  established there (utilities.css has no four-column variant).
+*/
+
+.main-collection {
+  padding-block: var(--space-800);
+}
+
+.main-collection__header {
+  margin-block-end: var(--space-600);
+  text-align: center;
+}
+
+.main-collection__title {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.main-collection__description {
+  max-width: 40ch;
+  margin: var(--space-200) auto 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.main-collection__empty {
+  padding-block: var(--space-800);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  text-align: center;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Sorting                                                                */
+/* Real GET form — fully functional without JS. CollectionSort           */
+/* (collection-form.js) auto-submits on change and hides the submit      */
+/* button once it confirms it can do that.                                */
+/* ---------------------------------------------------------------------- */
+
+.main-collection__sort {
+  display: flex;
+  justify-content: flex-end;
+  margin-block-end: var(--space-400);
+}
+
+.main-collection__sort-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-150);
+}
+
+.main-collection__sort-label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.main-collection__sort-select {
+  padding-block: var(--space-100);
+  padding-inline: var(--space-200);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+}
+
+.main-collection__sort-submit {
+  padding-block: var(--space-100);
+  padding-inline: var(--space-300);
+  border: 1px solid var(--color-text-primary);
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+}
+
+.main-collection__sort-submit:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Grid                                                                    */
+/* ---------------------------------------------------------------------- */
+
+.main-collection__grid {
+  gap: var(--space-500);
+}
+
+@media screen and (min-width: 64em) {
+  .main-collection__grid {
+    gap: var(--space-600);
+  }
+}

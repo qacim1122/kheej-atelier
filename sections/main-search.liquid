@@ -1,0 +1,119 @@
+{% comment %}
+  Main Search — search input, results grid, empty state, pagination.
+
+  Reuses snippets/product-card.liquid and snippets/pagination.liquid,
+  same as the Collection template built alongside this.
+
+  Restricted to type=product (hidden field below): this theme has no
+  article/page templates built yet, so rendering mixed-type search
+  results (products + articles + pages) would need branching for
+  content types that don't have anywhere to link to. Products-only
+  search is the coherent scope match for what this theme actually has.
+
+  Three distinct states, matching Shopify's real search object exactly:
+  search.performed == false (no query yet), performed but zero results
+  (empty state), and results present (grid + pagination). Pagination
+  isn't explicitly required in the brief for Search the way it is for
+  Collection, but a results page with no pagination for a large match
+  count would be a real production-quality gap — added on the same
+  shared snippet, no extra cost.
+{% endcomment %}
+
+{{ 'main-search.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign columns_desktop = section.settings.columns_desktop
+  assign columns_mobile = section.settings.columns_mobile
+  assign products_per_page = section.settings.products_per_page
+
+  assign grid_classes = 'grid main-search__grid'
+  if columns_mobile == '2'
+    assign grid_classes = grid_classes | append: ' grid--two'
+  endif
+  if columns_desktop == '2'
+    assign grid_classes = grid_classes | append: ' md:grid--two'
+  else
+    assign grid_classes = grid_classes | append: ' md:grid--three'
+  endif
+-%}
+
+<section class="main-search">
+  <div class="container">
+    <div class="main-search__header">
+      <h1 class="main-search__title">{{ 'sections.main_search.title' | t }}</h1>
+
+      <form action="{{ routes.search_url }}" method="get" role="search" class="main-search__form">
+        <input type="hidden" name="type" value="product">
+        <label for="SearchInput-{{ section.id }}" class="visually-hidden">
+          {{ 'sections.main_search.input_label' | t }}
+        </label>
+        <input
+          type="search"
+          name="q"
+          id="SearchInput-{{ section.id }}"
+          class="main-search__input"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'sections.main_search.input_placeholder' | t }}"
+        >
+        <button type="submit" class="main-search__submit">
+          {{ 'sections.main_search.submit' | t }}
+        </button>
+      </form>
+    </div>
+
+    {%- if search.performed == false -%}
+      <p class="main-search__prompt">{{ 'sections.main_search.prompt' | t }}</p>
+    {%- elsif search.results.size == 0 -%}
+      <p class="main-search__empty">{{ 'sections.main_search.empty' | t: terms: search.terms }}</p>
+    {%- else -%}
+      {%- paginate search.results by products_per_page -%}
+        <p class="main-search__count">{{ 'sections.main_search.results_count' | t: count: search.results_count }}</p>
+
+        <ul class="{{ grid_classes }}" role="list">
+          {%- for item in search.results -%}
+            <li>{% render 'product-card', card_product: item %}</li>
+          {%- endfor -%}
+        </ul>
+
+        {% render 'pagination', paginate: paginate %}
+      {%- endpaginate -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Search results",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1"
+    }
+  ]
+}
+{% endschema %}

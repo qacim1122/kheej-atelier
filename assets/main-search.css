@@ -1,0 +1,87 @@
+/*
+  Main Search section styles.
+
+  Self-contained, same discipline as every other section. Grid composes
+  assets/utilities.css's .grid + .grid--two + .md:grid--two /
+  .md:grid--three directly, same as Main Collection.
+*/
+
+.main-search {
+  padding-block: var(--space-800);
+}
+
+.main-search__header {
+  max-width: 32rem;
+  margin: 0 auto var(--space-600);
+  text-align: center;
+}
+
+.main-search__title {
+  margin: 0 0 var(--space-400);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.main-search__form {
+  display: flex;
+  gap: var(--space-150);
+}
+
+.main-search__input {
+  flex: 1;
+  padding-block: var(--space-150);
+  padding-inline: var(--space-300);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+}
+
+.main-search__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.main-search__submit {
+  padding-block: var(--space-150);
+  padding-inline: var(--space-400);
+  border: 1px solid var(--color-text-primary);
+  border-radius: var(--radius-default);
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+}
+
+.main-search__submit:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.main-search__prompt,
+.main-search__empty {
+  padding-block: var(--space-800);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+  text-align: center;
+}
+
+.main-search__count {
+  margin: 0 0 var(--space-400);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-small);
+}
+
+.main-search__grid {
+  gap: var(--space-500);
+}
+
+@media screen and (min-width: 64em) {
+  .main-search__grid {
+    gap: var(--space-600);
+  }
+}

@@ -1,0 +1,115 @@
+{% comment %}
+  Main Collection — product grid, sorting, pagination, empty state.
+
+  Reuses snippets/product-card.liquid and snippets/pagination.liquid
+  (both new, shared with the Search template built alongside this).
+
+  Sorting: a real GET-method form — fully functional with zero JS
+  (submitting navigates to ?sort_by=X, which Shopify's collection.url
+  respects natively). CollectionSort (collection-form.js) is
+  progressive enhancement only: it auto-submits on change and hides the
+  now-redundant submit button, same "hide once JS confirms it can drive
+  this" pattern used throughout the Product template's own JS. Changing
+  sort naturally resets pagination to page 1, since the form's action
+  targets collection.url without a page param.
+{% endcomment %}
+
+{{ 'main-collection.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'collection-form.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+  assign columns_desktop = section.settings.columns_desktop
+  assign columns_mobile = section.settings.columns_mobile
+  assign products_per_page = section.settings.products_per_page
+
+  assign grid_classes = 'grid main-collection__grid'
+  if columns_mobile == '2'
+    assign grid_classes = grid_classes | append: ' grid--two'
+  endif
+  if columns_desktop == '2'
+    assign grid_classes = grid_classes | append: ' md:grid--two'
+  else
+    assign grid_classes = grid_classes | append: ' md:grid--three'
+  endif
+-%}
+
+<section class="main-collection">
+  <div class="container">
+    <div class="main-collection__header">
+      <h1 class="main-collection__title">{{ collection.title | escape }}</h1>
+      {%- if collection.description != blank -%}
+        <div class="main-collection__description">{{ collection.description }}</div>
+      {%- endif -%}
+    </div>
+
+    {%- if collection.products.size == 0 -%}
+      <p class="main-collection__empty">{{ 'sections.main_collection.empty' | t }}</p>
+    {%- else -%}
+      <collection-sort class="main-collection__sort">
+        <form method="get" action="{{ collection.url }}" class="main-collection__sort-form">
+          <label for="SortBy-{{ section.id }}" class="main-collection__sort-label">
+            {{ 'sections.main_collection.sort_label' | t }}
+          </label>
+          <select name="sort_by" id="SortBy-{{ section.id }}" class="main-collection__sort-select">
+            {%- for option in collection.sort_options -%}
+              <option value="{{ option.value }}" {% if option.value == sort_by %}selected{% endif %}>
+                {{ option.name | escape }}
+              </option>
+            {%- endfor -%}
+          </select>
+          <button type="submit" class="main-collection__sort-submit">
+            {{ 'sections.main_collection.sort_apply' | t }}
+          </button>
+        </form>
+      </collection-sort>
+
+      {%- paginate collection.products by products_per_page -%}
+        <ul class="{{ grid_classes }}" role="list">
+          {%- for card_product in collection.products -%}
+            <li>{% render 'product-card', card_product: card_product %}</li>
+          {%- endfor -%}
+        </ul>
+
+        {% render 'pagination', paginate: paginate %}
+      {%- endpaginate -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Collection",
+  "settings": [
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "label": "Products per page",
+      "min": 4,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Desktop columns",
+      "options": [
+        { "value": "2", "label": "2" },
+        { "value": "3", "label": "3" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Mobile columns",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1"
+    }
+  ]
+}
+{% endschema %}
