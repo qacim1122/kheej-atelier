@@ -1,0 +1,50 @@
+{% comment %}
+  Main Article — no comments (not requested; would need a separate
+  form/moderation-state treatment out of scope here).
+{% endcomment %}
+
+{{ 'main-article.css' | asset_url | stylesheet_tag }}
+
+<section class="main-article">
+  <div class="container">
+    <article class="main-article__content">
+      <header class="main-article__header">
+        <p class="main-article__meta">
+          <time datetime="{{ article.published_at | date: '%Y-%m-%d' }}">{{ article.published_at | date: '%B %d, %Y' }}</time>
+          {%- if article.author != blank %} &middot; {{ article.author }}{% endif -%}
+        </p>
+        <h1 class="main-article__title">{{ article.title | escape }}</h1>
+      </header>
+
+      {%- if article.image != blank -%}
+        <div class="main-article__media">
+          {{
+            article.image
+            | image_url: width: 1600
+            | image_tag:
+              loading: 'eager',
+              fetchpriority: 'high',
+              sizes: '(min-width: 48em) 800px, 100vw',
+              widths: '600,900,1200,1600',
+              class: 'main-article__image',
+              alt: article.image.alt | default: article.title | escape
+          }}
+        </div>
+      {%- endif -%}
+
+      <div class="main-article__body">
+        {{ article.content }}
+      </div>
+
+      <div class="main-article__footer">
+        <a href="{{ blog.url }}" class="main-article__back-link">{{ 'sections.main_article.back_to_blog' | t }}</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Article"
+}
+{% endschema %}

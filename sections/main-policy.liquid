@@ -1,0 +1,23 @@
+{% comment %}
+  Main Policy — Shopify auto-populates page_title/content for whichever
+  policy page this is (privacy, refund, terms, shipping, subscription).
+{% endcomment %}
+
+{{ 'main-policy.css' | asset_url | stylesheet_tag }}
+
+<section class="main-policy">
+  <div class="container">
+    <div class="main-policy__content">
+      <h1 class="main-policy__title">{{ page_title | escape }}</h1>
+      <div class="main-policy__body">
+        {{ content }}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Policy"
+}
+{% endschema %}

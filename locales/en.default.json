@@ -88,6 +88,45 @@
       "prompt": "Enter a search term to get started.",
       "empty": "No results found for \"{{ terms }}\".",
       "results_count": "{{ count }} results"
+    },
+    "main_cart": {
+      "title": "Your cart",
+      "empty": "Your cart is empty.",
+      "continue_shopping": "Continue shopping",
+      "quantity_label": "Quantity",
+      "decrease_quantity": "Decrease quantity",
+      "increase_quantity": "Increase quantity",
+      "remove": "Remove",
+      "update_cart": "Update cart",
+      "note_label": "Order notes",
+      "subtotal": "Subtotal",
+      "checkout": "Check out"
+    },
+    "main_404": {
+      "title": "Page not found",
+      "message": "The page you're looking for doesn't exist or has been moved.",
+      "back_to_home": "Back to homepage"
+    },
+    "main_password": {
+      "title": "This store is currently unavailable.",
+      "password_label": "Password",
+      "password_placeholder": "Enter store password",
+      "submit": "Enter",
+      "error": "Wrong password. Please try again."
+    },
+    "main_blog": {
+      "empty": "No articles have been published yet."
+    },
+    "main_article": {
+      "back_to_blog": "Back to all articles"
+    },
+    "gift_card": {
+      "eyebrow": "Gift card",
+      "balance": "Current balance: {{ balance }}",
+      "expired": "This gift card has expired.",
+      "disabled": "This gift card is no longer active.",
+      "shop_link": "Start shopping",
+      "print": "Print"
     }
   }
 }

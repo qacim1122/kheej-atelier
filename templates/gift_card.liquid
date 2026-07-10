@@ -1,0 +1,42 @@
+{% comment %}
+  Gift card — plain .liquid template, not JSON/sections: Shopify
+  requires this exact format for gift card pages (special print-
+  friendly page, paired with layout/gift_card.liquid, no header/footer).
+{% endcomment %}
+
+{{ 'gift-card.css' | asset_url | stylesheet_tag }}
+
+<main class="gift-card">
+  <div class="gift-card__container">
+    {%- if shop.logo != blank -%}
+      {{ shop.logo | image_url: width: 300 | image_tag: width: 150, class: 'gift-card__logo', alt: shop.name }}
+    {%- else -%}
+      <p class="gift-card__shop-name">{{ shop.name | escape }}</p>
+    {%- endif -%}
+
+    <p class="gift-card__eyebrow">{{ 'sections.gift_card.eyebrow' | t }}</p>
+
+    <p class="gift-card__amount">{{ gift_card.initial_value | money }}</p>
+
+    <div class="gift-card__code-wrapper">
+      <p class="gift-card__code">{{ gift_card.code | format_code }}</p>
+    </div>
+
+    {%- if gift_card.enabled and gift_card.expired == false -%}
+      <p class="gift-card__balance">
+        {{ 'sections.gift_card.balance' | t: balance: gift_card.balance | money }}
+      </p>
+      <a href="{{ shop.url }}" class="gift-card__shop-link">{{ 'sections.gift_card.shop_link' | t }}</a>
+    {%- elsif gift_card.expired -%}
+      <p class="gift-card__expired">{{ 'sections.gift_card.expired' | t }}</p>
+    {%- else -%}
+      <p class="gift-card__disabled">{{ 'sections.gift_card.disabled' | t }}</p>
+    {%- endif -%}
+
+    <button type="button" class="gift-card__print" id="GiftCardPrint" hidden>
+      {{ 'sections.gift_card.print' | t }}
+    </button>
+  </div>
+</main>
+
+<script src="{{ 'gift-card.js' | asset_url }}" defer></script>

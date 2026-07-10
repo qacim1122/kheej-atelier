@@ -1,0 +1,107 @@
+.gift-card-layout {
+  margin: 0;
+  background: var(--color-surface-muted);
+}
+
+.gift-card {
+  display: flex;
+  align-items: center;
+  min-height: 100svh;
+  padding-block: var(--space-800);
+}
+
+.gift-card__container {
+  max-width: 28rem;
+  margin-inline: auto;
+  padding: var(--space-600);
+  background: var(--color-surface);
+  border-radius: var(--radius-default);
+  text-align: center;
+}
+
+.gift-card__logo {
+  display: block;
+  margin: 0 auto var(--space-400);
+}
+
+.gift-card__shop-name {
+  margin: 0 0 var(--space-400);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-heading-4);
+}
+
+.gift-card__eyebrow {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.gift-card__amount {
+  margin: var(--space-200) 0 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-display-xl);
+  line-height: var(--line-height-tight);
+}
+
+.gift-card__code-wrapper {
+  margin-block-start: var(--space-500);
+  padding-block: var(--space-300);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-default);
+}
+
+.gift-card__code {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+}
+
+.gift-card__balance {
+  margin: var(--space-400) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-small);
+}
+
+.gift-card__expired,
+.gift-card__disabled {
+  margin: var(--space-400) 0 0;
+  color: var(--color-error);
+  font-size: var(--font-size-body-small);
+}
+
+.gift-card__shop-link {
+  display: inline-block;
+  margin-block-start: var(--space-300);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-small);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.gift-card__print {
+  display: block;
+  margin: var(--space-500) auto 0;
+  padding-block: var(--space-100);
+  padding-inline: var(--space-300);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+}
+
+@media print {
+  .gift-card__print {
+    display: none;
+  }
+}

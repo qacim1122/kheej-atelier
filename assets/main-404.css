@@ -1,0 +1,47 @@
+.main-404 {
+  padding-block: var(--space-1600);
+  text-align: center;
+}
+
+.main-404__eyebrow {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.08em;
+}
+
+.main-404__title {
+  margin: var(--space-200) 0 0;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.main-404__message {
+  max-width: 32rem;
+  margin: var(--space-300) auto 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+}
+
+.main-404__link {
+  display: inline-block;
+  margin-block-start: var(--space-500);
+  padding-block: var(--space-150);
+  padding-inline: var(--space-400);
+  border: 1px solid var(--color-text-primary);
+  border-radius: var(--radius-default);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+}
+
+.main-404__link:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
