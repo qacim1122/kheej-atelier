@@ -1,0 +1,167 @@
+{% comment %}
+  Main Cart — line items, quantity updates, remove, notes, subtotal,
+  checkout, continue shopping.
+
+  No-JS baseline: one real Shopify cart form tag. Each line's quantity
+  input is name="updates[key]" (Shopify's classic cart-form
+  convention — submitting the form with ANY button applies every line's
+  current input value, not just one), so quantity changes work with
+  zero JS via the visible "Update cart" button. Remove uses
+  line_item.url_to_remove — a real, native Shopify URL, a plain <a
+  href>, fully functional without JS. Checkout is the form's own
+  name="checkout" submit button — Shopify's native mechanism, and since
+  it's the same form, it also carries through any pending quantity
+  edits, not just previously-saved ones.
+
+  With JS: CartQuantity (the stepper) dispatches a quantity-change event
+  rather than doing any network call itself — CartItems (wrapping the
+  whole line item list) is the one place that talks to
+  /cart/change.js, so there's a single source of truth for cart state
+  updates, matching the header.js style of small, focused custom
+  elements. A successful AJAX update hides the no-JS "Update cart"
+  button, same "hide once JS confirms it can drive this" pattern used
+  throughout the Product and Collection templates.
+
+  Money formatting caveat: /cart/change.js returns raw integer cents,
+  not a pre-formatted string the way Liquid's money filter does (unlike
+  the Product template's variant JSON, which could pre-format server-
+  side specifically to avoid this). shop.money_format is passed down so
+  JS does the standard {{amount}}-placeholder substitution Shopify's own
+  reference cart implementations use — not a full reimplementation of
+  currency formatting, just that one documented substitution pattern.
+  It does not handle every money_format placeholder variant (only the
+  common {{amount}} one), which is a known, minor limitation.
+
+  A failed AJAX cart-empty transition (cart hits zero items via
+  quantity/remove) reloads the page rather than dynamically swapping in
+  the server-only-rendered empty state — a deliberate simplification for
+  a comparatively rare, terminal transition rather than duplicating that
+  markup into a JS-hydratable template.
+{% endcomment %}
+
+{{ 'main-cart.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'cart-form.js' | asset_url }}" defer></script>
+
+<section class="main-cart">
+  <div class="container">
+    <h1 class="main-cart__title">{{ 'sections.main_cart.title' | t }}</h1>
+
+    {%- if cart.item_count == 0 -%}
+      <div class="main-cart__empty">
+        <p class="main-cart__empty-message">{{ 'sections.main_cart.empty' | t }}</p>
+        <a href="{{ routes.all_products_collection_url }}" class="main-cart__continue-shopping">
+          {{ 'sections.main_cart.continue_shopping' | t }}
+        </a>
+      </div>
+    {%- else -%}
+      {%- form 'cart', cart, class: 'main-cart__form' -%}
+        <div class="main-cart__layout">
+          <cart-items class="main-cart__items" data-money-format="{{ shop.money_format | escape }}">
+            <ul class="main-cart__list" role="list">
+              {%- for line_item in cart.items -%}
+                <li class="main-cart__line-item" data-line-item-key="{{ line_item.key }}">
+                  <div class="main-cart__line-media">
+                    {%- if line_item.image -%}
+                      {{
+                        line_item.image
+                        | image_url: width: 300
+                        | image_tag:
+                          loading: 'lazy',
+                          width: 150,
+                          height: 150,
+                          class: 'main-cart__line-image',
+                          alt: line_item.image.alt | default: line_item.title | escape
+                      }}
+                    {%- endif -%}
+                  </div>
+
+                  <div class="main-cart__line-details">
+                    <h2 class="main-cart__line-title">
+                      <a href="{{ line_item.url }}" class="main-cart__line-link">{{ line_item.product.title | escape }}</a>
+                    </h2>
+
+                    {%- if line_item.variant.title != 'Default Title' -%}
+                      <p class="main-cart__line-variant">{{ line_item.variant.title | escape }}</p>
+                    {%- endif -%}
+
+                    <p class="main-cart__line-price">
+                      {%- if line_item.original_line_price != line_item.final_line_price -%}
+                        <span class="main-cart__line-price--sale">{{ line_item.final_line_price | money }}</span>
+                        <span class="main-cart__line-compare-price">{{ line_item.original_line_price | money }}</span>
+                      {%- else -%}
+                        {{ line_item.final_line_price | money }}
+                      {%- endif -%}
+                    </p>
+
+                    <cart-quantity class="main-cart__quantity" data-key="{{ line_item.key }}">
+                      <label for="Quantity-{{ line_item.key }}" class="visually-hidden">
+                        {{ 'sections.main_cart.quantity_label' | t }}
+                      </label>
+                      <div class="main-cart__quantity-controls">
+                        <button
+                          type="button"
+                          class="main-cart__quantity-button main-cart__quantity-button--decrease"
+                          aria-label="{{ 'sections.main_cart.decrease_quantity' | t }}"
+                          aria-controls="Quantity-{{ line_item.key }}"
+                        >&minus;</button>
+                        <input
+                          type="number"
+                          name="updates[{{ line_item.key }}]"
+                          id="Quantity-{{ line_item.key }}"
+                          class="main-cart__quantity-input"
+                          value="{{ line_item.quantity }}"
+                          min="0"
+                          inputmode="numeric"
+                        >
+                        <button
+                          type="button"
+                          class="main-cart__quantity-button main-cart__quantity-button--increase"
+                          aria-label="{{ 'sections.main_cart.increase_quantity' | t }}"
+                          aria-controls="Quantity-{{ line_item.key }}"
+                        >&plus;</button>
+                      </div>
+                    </cart-quantity>
+
+                    <a href="{{ line_item.url_to_remove }}" class="main-cart__line-remove">
+                      {{ 'sections.main_cart.remove' | t }}
+                    </a>
+                  </div>
+                </li>
+              {%- endfor -%}
+            </ul>
+
+            <button type="submit" name="update" class="main-cart__update">
+              {{ 'sections.main_cart.update_cart' | t }}
+            </button>
+          </cart-items>
+
+          <div class="main-cart__summary">
+            <label for="CartNote-{{ section.id }}" class="main-cart__note-label">
+              {{ 'sections.main_cart.note_label' | t }}
+            </label>
+            <textarea name="note" id="CartNote-{{ section.id }}" class="main-cart__note">{{ cart.note }}</textarea>
+
+            <p class="main-cart__subtotal">
+              <span class="main-cart__subtotal-label">{{ 'sections.main_cart.subtotal' | t }}</span>
+              <span class="main-cart__subtotal-value">{{ cart.total_price | money }}</span>
+            </p>
+
+            <button type="submit" name="checkout" class="main-cart__checkout">
+              {{ 'sections.main_cart.checkout' | t }}
+            </button>
+
+            <a href="{{ routes.all_products_collection_url }}" class="main-cart__continue-shopping">
+              {{ 'sections.main_cart.continue_shopping' | t }}
+            </a>
+          </div>
+        </div>
+      {%- endform -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Cart"
+}
+{% endschema %}

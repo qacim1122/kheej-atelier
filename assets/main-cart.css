@@ -1,0 +1,304 @@
+/*
+  Main Cart section styles.
+
+  Self-contained, same discipline as every other section: no shared
+  components.css dependency. Quantity stepper CSS mirrors the Product
+  template's own (visually-hidden native input as source of truth,
+  +/- buttons revealed only once JS confirms it can drive them) but is
+  a separate, self-contained copy scoped to .main-cart__quantity-* —
+  product-form.js/main-product.css are explicitly out of scope for this
+  task.
+*/
+
+.main-cart {
+  padding-block: var(--space-800);
+}
+
+.main-cart__title {
+  margin: 0 0 var(--space-600);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-heading);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Empty state                                                            */
+/* ---------------------------------------------------------------------- */
+
+.main-cart__empty {
+  padding-block: var(--space-800);
+  text-align: center;
+}
+
+.main-cart__empty-message {
+  margin: 0 0 var(--space-400);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Layout                                                                 */
+/* ---------------------------------------------------------------------- */
+
+.main-cart__layout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-600);
+}
+
+@media screen and (min-width: 64em) {
+  .main-cart__layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .main-cart__items {
+    flex: 1;
+  }
+
+  .main-cart__summary {
+    width: 22rem;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Line items                                                             */
+/* ---------------------------------------------------------------------- */
+
+.main-cart__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-400);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.main-cart__line-item {
+  display: grid;
+  grid-template-columns: 6rem 1fr;
+  gap: var(--space-300);
+  padding-block-end: var(--space-400);
+  border-block-end: 1px solid var(--color-border);
+}
+
+.main-cart__line-image {
+  width: 100%;
+  height: auto;
+  border-radius: var(--radius-default);
+  background: var(--color-surface-muted);
+}
+
+.main-cart__line-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-100);
+}
+
+.main-cart__line-title {
+  margin: 0;
+  font-family: var(--font-family-heading);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-regular);
+  line-height: var(--line-height-tight);
+}
+
+.main-cart__line-link {
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.main-cart__line-variant {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+}
+
+.main-cart__line-price {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-small);
+}
+
+.main-cart__line-price--sale {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-medium);
+}
+
+.main-cart__line-compare-price {
+  margin-inline-start: var(--space-100);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.main-cart__line-remove {
+  align-self: flex-start;
+  margin-block-start: var(--space-050);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.main-cart__line-remove:hover {
+  color: var(--color-error);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Quantity stepper                                                       */
+/* Native number input is the source of truth; +/- buttons are hidden by */
+/* default and only revealed by a JS-added modifier class — see          */
+/* cart-form.js and the equivalent Product template pattern.             */
+/* ---------------------------------------------------------------------- */
+
+.main-cart__quantity {
+  display: inline-block;
+  margin-block-start: var(--space-100);
+}
+
+.main-cart__quantity-controls {
+  display: inline-flex;
+  align-items: stretch;
+  width: fit-content;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  overflow: hidden;
+}
+
+.main-cart__quantity-input {
+  width: 3rem;
+  padding-block: var(--space-100);
+  padding-inline: var(--space-050);
+  border: 0;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  text-align: center;
+}
+
+.main-cart__quantity-button {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--space-500);
+  border: 0;
+  background: var(--color-surface-muted);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-small);
+  line-height: 1;
+  transition: background-color var(--duration-default) var(--ease-standard);
+}
+
+.main-cart__quantity-button:hover:not(:disabled) {
+  background: var(--color-border);
+}
+
+.main-cart__quantity--js .main-cart__quantity-button {
+  display: inline-flex;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Update cart button                                                     */
+/* No-JS fallback — hidden once CartItems confirms AJAX updates work.     */
+/* ---------------------------------------------------------------------- */
+
+.main-cart__update {
+  margin-block-start: var(--space-400);
+  padding-block: var(--space-150);
+  padding-inline: var(--space-400);
+  border: 1px solid var(--color-text-primary);
+  border-radius: var(--radius-default);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  font-weight: var(--font-weight-medium);
+}
+
+.main-cart__update:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Summary                                                                */
+/* ---------------------------------------------------------------------- */
+
+.main-cart__summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-300);
+  padding: var(--space-400);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-default);
+}
+
+.main-cart__note-label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.main-cart__note {
+  width: 100%;
+  min-height: 6rem;
+  padding: var(--space-200);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-default);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body-small);
+  resize: vertical;
+}
+
+.main-cart__subtotal {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 0;
+  padding-block-start: var(--space-300);
+  border-block-start: 1px solid var(--color-border);
+}
+
+.main-cart__subtotal-label {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-small);
+}
+
+.main-cart__subtotal-value {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-heading-4);
+}
+
+.main-cart__checkout {
+  padding-block: var(--space-200);
+  border: 1px solid var(--color-text-primary);
+  border-radius: var(--radius-default);
+  background: var(--color-text-primary);
+  color: var(--color-surface);
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  font-weight: var(--font-weight-medium);
+}
+
+.main-cart__checkout:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.main-cart__continue-shopping {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-small);
+  text-align: center;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.main-cart__continue-shopping:hover {
+  color: var(--color-text-primary);
+}
